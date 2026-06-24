@@ -141,16 +141,12 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
 .quiz-cell.coming-soon .cta-arrow { display: none; }
 
 /* Donation footer */
-.donation-footer { margin-top: 48px; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 28px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.donation-text h3 { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--navy); margin-bottom: 6px; }
-.donation-text p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.3px; line-height: 1.6; max-width: 480px; }
-.donation-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
-.donate-btn { padding: 10px 20px; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
-.donate-btn.venmo { background: #3396cd; color: white; }
-.donate-btn.venmo:hover { background: #2780b0; }
-.donate-btn.zelle { background: var(--navy); color: white; }
-.donate-btn.zelle:hover { background: var(--navy-soft); }
-.zelle-copied { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--pass); letter-spacing: 0.5px; display: none; margin-top: 4px; text-align: center; }
+.donation-footer { margin-top: 48px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.donation-text p { font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--ink-soft); }
+.donation-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.donate-btn { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.4px; color: var(--ink-soft); cursor: pointer; text-decoration: none; border: 1px solid var(--line); background: var(--bg); padding: 7px 14px; border-radius: 6px; transition: all 0.15s; }
+.donate-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-pale); }
+.zelle-copied { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--pass); letter-spacing: 0.5px; display: none; }
 
 .footer-bottom { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -257,6 +253,44 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
   text-decoration: underline; text-underline-offset: 2px;
 }
 .modal-skip:hover { color: var(--ink); }
+
+/* ===== RESET CONFIRM MODAL ===== */
+.reset-modal-overlay {
+  position: fixed; inset: 0; background: rgba(10, 37, 64, 0.55);
+  z-index: 1001; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; padding: 16px;
+}
+.reset-modal-overlay.visible { opacity: 1; pointer-events: all; }
+.reset-modal-box {
+  background: var(--card); border-radius: 12px; max-width: 420px; width: 100%;
+  overflow: hidden; transform: translateY(10px); transition: transform 0.2s;
+}
+.reset-modal-overlay.visible .reset-modal-box { transform: translateY(0); }
+.reset-modal-body { padding: 28px 28px 24px; }
+.reset-modal-title {
+  font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--navy);
+  margin-bottom: 8px;
+}
+.reset-modal-desc {
+  font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--muted);
+  line-height: 1.6;
+}
+.reset-modal-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding: 16px 28px 24px; border-top: 1px solid var(--line);
+}
+.reset-cancel-btn {
+  background: none; border: 1px solid var(--line); border-radius: 6px;
+  padding: 10px 20px; font-family: 'Outfit', sans-serif; font-size: 14px;
+  color: var(--ink-soft); cursor: pointer; transition: all 0.15s;
+}
+.reset-cancel-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+.reset-confirm-btn {
+  background: var(--fail); color: white; border: none; border-radius: 6px;
+  padding: 10px 20px; font-family: 'Outfit', sans-serif; font-size: 14px;
+  font-weight: 600; cursor: pointer; transition: background 0.15s;
+}
+.reset-confirm-btn:hover { background: #b91c1c; }
 </style>
 </head>
 <body>
@@ -313,12 +347,26 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
   </div>
 </div>
 
+<!-- Reset Confirmation Modal -->
+<div class="reset-modal-overlay" id="reset-modal-overlay">
+  <div class="reset-modal-box">
+    <div class="reset-modal-body">
+      <div class="reset-modal-title">Reset all scores?</div>
+      <div class="reset-modal-desc">This will clear every quiz score on this device. You'll start fresh with no progress saved. This cannot be undone.</div>
+    </div>
+    <div class="reset-modal-actions">
+      <button class="reset-cancel-btn" onclick="closeResetModal()">Cancel</button>
+      <button class="reset-confirm-btn" onclick="confirmReset()">Yes, reset everything</button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
 
 <div class="hero">
   <div class="eyebrow">MedSurg I · Final Exam</div>
   <h1>Med-Surgical Study Hub</h1>
-  <p class="tagline">Knowledge Checks build foundational recall. Deep Drills sharpen NCLEX-style judgment.</p>
+  <p class="tagline">Knowledge Checks build recall. Deep Drills sharpen NCLEX-style judgment.</p>
 </div>
 
 <!-- Top dashboard -->
@@ -393,13 +441,13 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
 <!-- Donation footer -->
 <div class="donation-footer">
   <div class="donation-text">
-    <h3>Find this helpful?</h3>
-    <p>This site is free for the whole cohort. If it helped you study, a small tip goes a long way toward keeping it updated for future exams.</p>
+    <p>Built for the cohort, free forever. Any support is appreciated.</p>
   </div>
   <div class="donation-actions">
     <a href="venmo://paycharge?txn=pay&recipients=Tom_Thomas&note=Nursing%20Finals%20Hub" class="donate-btn venmo">Venmo @Tom_Thomas</a>
+    <span style="color: var(--line); font-size: 12px;">|</span>
     <button class="donate-btn zelle" onclick="copyZelle(this)">Zelle (914) 646-0456</button>
-    <div class="zelle-copied" id="zelle-copied">Copied!</div>
+    <span class="zelle-copied" id="zelle-copied">Copied!</span>
   </div>
 </div>
 
@@ -585,10 +633,13 @@ function applyFilter(btn, filter) {
 // ===== CONTINUE STUDYING =====
 function buildContinueList() {
   const scored = [];
+  let anyAttempted = false;
+
   topics.forEach(t => {
     if (!t.kcReady && !t.ddReady) return;
     const kc = getScore(t.key, 'knowledge');
     const dd = getScore(t.key, 'deepdrill');
+    if (kc || dd) anyAttempted = true;
     const kcAttempted = t.kcReady && kc;
     const ddAttempted = t.ddReady && dd;
     const allAttempted = (!t.kcReady || kcAttempted) && (!t.ddReady || ddAttempted);
@@ -611,7 +662,7 @@ function buildContinueList() {
   scored.sort((a, b) => b.priority - a.priority);
   const top3 = scored.slice(0, 3);
 
-  if (top3.length === 0) { document.getElementById('continue-section').style.display = 'none'; return; }
+  if (!anyAttempted || top3.length === 0) { document.getElementById('continue-section').style.display = 'none'; return; }
   document.getElementById('continue-section').style.display = '';
   document.getElementById('continue-list').innerHTML = top3.map(item =>
     `<a href="${item.link}" class="continue-item">
@@ -694,10 +745,21 @@ function copyZelle(btn) {
 }
 
 function resetAllScores() {
-  if (!confirm('Reset all scores? This cannot be undone.')) return;
+  document.getElementById('reset-modal-overlay').classList.add('visible');
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal-overlay').classList.remove('visible');
+}
+
+function confirmReset() {
   Object.keys(localStorage).filter(k => k.startsWith('score_')).forEach(k => localStorage.removeItem(k));
   location.reload();
 }
+
+document.getElementById('reset-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeResetModal();
+});
 
 // ===== WELCOME MODAL =====
 function closeModal() {
