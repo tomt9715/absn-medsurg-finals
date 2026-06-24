@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch 16 Postoperative — Deep Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c;
+  --teal: #0d9488; --teal-pale: #f0fdfa;
+  --purple: #7c3aed; --purple-pale: #f5f3ff;
+  --gold: #f59e0b; --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280;
+  --bg: #fafaf7; --card: #ffffff; --line: #e5e0d5;
+  --correct: #059669; --correct-bg: #ecfdf5;
+  --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; padding: 32px 16px 80px; min-height: 100vh; }
+.container { max-width: 760px; margin: 0 auto; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1.5px; color: var(--purple); text-transform: uppercase; margin-bottom: 12px; }
+h1 { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--navy); margin-bottom: 8px; line-height: 1.15; }
+.tagline { color: var(--muted); margin-bottom: 32px; font-size: 16px; }
+.start-card, .question-card, .results-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 32px; margin-bottom: 24px; }
+.start-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+.start-stat { border: 1px solid var(--line); border-radius: 4px; padding: 16px; text-align: center; }
+.start-stat-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--purple); display: block; }
+.start-stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+.btn { background: var(--purple); color: white; border: none; padding: 14px 32px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+.btn:hover { background: #6d28d9; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-secondary { background: var(--navy); }
+.btn-secondary:hover { background: var(--navy-soft); }
+.progress-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+.progress-fill { height: 100%; background: var(--purple); transition: width 0.3s; }
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+.q-stem { font-size: 18px; color: var(--ink); margin-bottom: 24px; line-height: 1.5; }
+    .lab-strip { margin-top: 14px; margin-bottom: 18px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; border-left: 3px solid var(--teal); }
+    .lab-strip-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    .lab-row { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+    .lab-item { display: flex; flex-direction: column; gap: 2px; min-width: 90px; }
+    .lab-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+    .lab-value { font-size: 14px; color: var(--ink); font-weight: 600; }
+    .lab-value-unit { font-weight: 400; color: var(--muted); font-size: 11px; }
+    .lab-range { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.option { border: 1.5px solid var(--line); border-radius: 6px; padding: 14px 18px; cursor: pointer; transition: all 0.15s; background: var(--card); font-size: 15px; display: flex; align-items: flex-start; gap: 12px; }
+.option:hover:not(.locked) { border-color: var(--purple); background: var(--purple-pale); }
+.option.selected { border-color: var(--purple); background: var(--purple-pale); }
+.option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+.option-letter { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--muted); min-width: 18px; }
+.option.correct .option-letter { color: var(--correct); }
+.option.wrong .option-letter { color: var(--wrong); }
+.rationale { background: var(--purple-pale); border-left: 3px solid var(--purple); padding: 16px 20px; border-radius: 0 6px 6px 0; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+.rationale strong { color: var(--navy); }
+.concept-pill { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.5px; background: var(--purple); color: white; padding: 3px 10px; border-radius: 100px; margin-bottom: 10px; text-transform: uppercase; }
+.others-list { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--ink-soft); }
+.others-list div { margin-bottom: 6px; }
+.btn-row { display: flex; gap: 12px; justify-content: flex-end; }
+.results-score { font-family: 'DM Serif Display', serif; font-size: 56px; text-align: center; margin: 12px 0; }
+.results-score.pass { color: var(--correct); }
+.results-score.borderline { color: var(--partial); }
+.results-score.fail { color: var(--wrong); }
+.results-pts { font-family: 'DM Mono', monospace; text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.perf-msg { text-align: center; margin: 16px 0 32px; font-size: 16px; color: var(--ink-soft); font-style: italic; }
+.missed-section h3 { font-family: 'DM Serif Display', serif; color: var(--navy); margin-bottom: 16px; font-size: 22px; }
+.missed-item { border: 1px solid var(--line); border-radius: 6px; padding: 16px; margin-bottom: 12px; background: var(--bg); font-size: 14px; }
+.missed-item .stem { font-weight: 500; margin-bottom: 8px; }
+.missed-item .ans { color: var(--correct); margin-bottom: 8px; font-family: 'DM Mono', monospace; font-size: 13px; }
+.missed-item .rat { color: var(--ink-soft); font-size: 13px; }
+.back-btn { position: fixed; bottom: 20px; left: 20px; background: var(--navy); color: white; text-decoration: none; padding: 10px 18px; border-radius: 100px; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 50; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← STUDY HUB</a>
+<div class="container">
+
+<div id="start-screen">
+  <div class="eyebrow">Deep Drill · Chapter 16</div>
+  <h1>Postoperative Nursing Care</h1>
+  <p class="tagline">NCLEX-style application: shock recognition, evisceration response, DVT triage, wound complication priorities.</p>
+  <div class="start-card">
+    <div class="start-stats">
+      <div class="start-stat"><span class="start-stat-num">25</span><span class="start-stat-label">Questions</span></div>
+      <div class="start-stat"><span class="start-stat-num">MC</span><span class="start-stat-label">Format</span></div>
+      <div class="start-stat"><span class="start-stat-num">Yes</span><span class="start-stat-label">Rationale</span></div>
+    </div>
+    <p style="margin-bottom: 20px; color: var(--ink-soft);">Higher-difficulty NCLEX-style scenarios. Apply your knowledge to priority and clinical-judgment situations.</p>
+    <button class="btn" onclick="begin()">Begin</button>
+  </div>
+</div>
+
+<div id="quiz-screen" class="hidden">
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="question-card">
+    <div class="q-header">
+      <span id="q-counter">Question 1 of 25</span>
+      <span id="q-points">0 pts</span>
+    </div>
+    <div class="q-stem" id="q-stem"></div>
+    <div class="options" id="q-options"></div>
+    <div id="rationale-area" class="hidden"></div>
+    <div class="btn-row">
+      <button class="btn" id="submit-btn" onclick="submitAnswer()" disabled>Submit</button>
+      <button class="btn btn-secondary hidden" id="next-btn" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+</div>
+
+<div id="results-screen" class="hidden">
+  <div class="results-card">
+    <div class="eyebrow">Results · Deep Drill</div>
+    <h1>Postoperative</h1>
+    <div class="results-score" id="r-score">0%</div>
+    <div class="results-pts" id="r-pts">0 / 25 points</div>
+    <div class="perf-msg" id="r-msg"></div>
+    <div class="btn-row" style="justify-content: center; margin-bottom: 32px;">
+      <button class="btn" onclick="location.reload()">Retry Quiz</button>
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Back to Hub</a>
+    </div>
+    <div class="missed-section" id="missed-section"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A nurse is caring for four post-op patients. Which patient should the nurse assess FIRST?",
+    options: [
+      "A patient with absent bowel sounds 3 hours post-op",
+      "A patient who has not voided 4 hours post-op",
+      "A patient reporting incisional pain rated 6/10",
+      "A patient with pallor, cool clammy skin, BP 86/54, HR 128"
+    ],
+    answer: 3,
+    concept: "Shock Priority Triage",
+    rationale: "Pallor, cool clammy skin, hypotension, and tachycardia are classic signs of post-op hemorrhage/hypovolemic shock. Assess first and notify the provider.",
+    others: {
+      "0": "Absent bowel sounds at 3 hours post-op is normal early in the post-op period.",
+      "1": "Voiding within 6-8 hours is acceptable; intervention not yet needed.",
+      "2": "Pain 6/10 is concerning but not life-threatening compared to shock."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient suddenly states \"Something popped\" and the nurse sees abdominal organs protruding through the incision. What is the priority action?",
+    options: [
+      "Gently push the organs back inside with sterile gloved hands",
+      "Apply a dry sterile gauze and tape it firmly in place",
+      "Cover with sterile saline-moistened dressing and call provider",
+      "Position the patient prone and apply firm pressure"
+    ],
+    answer: 2,
+    concept: "Evisceration Response",
+    rationale: "Cover with sterile saline-moistened dressing, do NOT reinsert organs, position low-Fowler's with knees bent, NPO, and call provider immediately.",
+    others: {
+      "0": "NEVER reinsert protruding organs — risks severe injury and contamination.",
+      "1": "Dry gauze can adhere to and damage exposed organs.",
+      "3": "Prone with pressure further injures the exposed viscera."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient arrives in PACU after a 5-hour abdominal surgery with core temperature 35.2°C (95.4°F), shivering, and BP 102/60. Vital signs were stable in the OR. Which intervention is the priority?",
+    options: [
+      "Document the temperature and reassess in 30 minutes",
+      "Apply a forced-air warming blanket and warm IV fluids; monitor closely",
+      "Encourage the patient to ambulate to generate body heat",
+      "Withhold pain medication until temperature normalizes"
+    ],
+    answer: 1,
+    concept: "Post-Op Hypothermia",
+    rationale: "Post-op hypothermia (<36°C) is common after long surgeries — it increases bleeding (impaired coagulation), wound infection risk, cardiac stress (shivering increases O₂ demand), and prolongs anesthesia recovery. Active rewarming with forced-air blankets (Bair Hugger) and warm IV fluids is the standard. Passive warming alone (blankets) is too slow for clinically significant hypothermia.",
+    others: {
+      "0": "Active rewarming is needed for clinically significant hypothermia, not watchful waiting.",
+      "2": "Patient is just out of OR — ambulation is not appropriate before recovery.",
+      "3": "Pain control is still appropriate; opioids do not prevent rewarming."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient is in PACU 2 hours post-op from a laparoscopic cholecystectomy and reports nausea, has vomited twice, and reports dizziness. Vital signs are stable. The patient received a general anesthetic with sevoflurane and IV opioids. Which intervention is most appropriate first?",
+    options: [
+      "Insert a nasogastric tube for decompression immediately",
+      "Hold all medications until vomiting resolves",
+      "Encourage immediate oral intake to settle the stomach",
+      "Administer prescribed antiemetic (e.g., ondansetron) and assess hydration"
+    ],
+    answer: 3,
+    concept: "Post-Op Nausea/Vomiting (PONV)",
+    rationale: "PONV is common (up to 30% of patients) — risk factors: female, non-smoker, history of motion sickness/PONV, opioid use, volatile anesthetics. Management: antiemetics like ondansetron (5-HT3 antagonist) first-line, dexamethasone, scopolamine patch. Most surgical patients have multimodal antiemetic prophylaxis ordered. NG tube is for ileus or obstruction, not routine PONV. Encouraging oral intake during active vomiting worsens the problem.",
+    others: {
+      "0": "NG decompression is for ileus/obstruction, not routine PONV.",
+      "1": "Holding all medications could worsen pain or other needed therapy.",
+      "2": "Oral intake during active nausea/vomiting worsens symptoms."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient on day 2 has a temperature of 100.4°F, increasing incisional pain, and yellow-green drainage from the wound. What is the priority action?",
+    options: [
+      "Apply a dry sterile dressing and recheck in 4 hours",
+      "Encourage ambulation to improve circulation to the wound",
+      "Administer the prescribed PRN acetaminophen and document",
+      "Notify the provider — these findings suggest wound infection"
+    ],
+    answer: 3,
+    concept: "Wound Infection Recognition",
+    rationale: "Fever, increasing pain, and purulent (yellow-green) drainage are signs of wound infection. Notify the provider for assessment and likely antibiotic therapy.",
+    others: {
+      "0": "Delays infection treatment; provider must be notified.",
+      "1": "Ambulation does not treat an active wound infection.",
+      "2": "Acetaminophen masks fever without addressing infection."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient on bedrest reports new calf pain, swelling, and warmth. Which action is contraindicated?",
+    options: [
+      "Notify the provider immediately",
+      "Massage the calf to improve circulation",
+      "Keep the patient on bedrest until evaluation",
+      "Measure and compare leg circumference bilaterally"
+    ],
+    answer: 1,
+    concept: "DVT Massage Avoidance",
+    rationale: "NEVER massage a suspected DVT — this can dislodge the clot and cause a pulmonary embolism. Notify the provider, keep the patient still, and prepare for diagnostic workup.",
+    others: {
+      "0": "Notifying the provider is appropriate and necessary.",
+      "2": "Bedrest until evaluation is appropriate for suspected DVT.",
+      "3": "Measuring circumference helps confirm unilateral swelling."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient is post-op day 1 from abdominal surgery. The nurse is differentiating between two complications. Which finding is MORE consistent with atelectasis than pulmonary embolism?",
+    options: [
+      "Sudden onset chest pain with SpO₂ rapidly dropping to 85%",
+      "Acute right ventricular strain pattern on the ECG",
+      "Hemoptysis with sudden severe chest pain",
+      "Gradual SpO₂ decrease, low fever, diminished basilar breath sounds"
+    ],
+    answer: 3,
+    concept: "Atelectasis vs PE",
+    rationale: "Atelectasis (collapsed alveoli) is the most common post-op pulmonary complication, presenting GRADUALLY: low-grade fever (usually <38.5°C in first 48h), dyspnea, diminished breath sounds at bases, decreased SpO₂. Treatment: incentive spirometry, deep breathing, ambulation, pain control. PE presents SUDDENLY with severe chest pain, severe dyspnea, hypoxia, sometimes hemoptysis or right heart strain on ECG — much more dramatic and acute.",
+    others: {
+      "0": "Sudden chest pain + acute hypoxia is PE pattern, not atelectasis.",
+      "1": "Right heart strain on ECG is PE finding.",
+      "2": "Hemoptysis with sudden chest pain is classic PE."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A nurse is caring for a post-op patient with the following findings. Which finding requires immediate intervention?",
+    options: [
+      "Hemoglobin 11.8 g/dL on day 1 post-op (normal 12-18)",
+      "Mild incisional pain rated 4/10 with movement",
+      "Sudden BP drop from 130/80 to 88/52 with HR 122",
+      "Soft, non-distended abdomen with passage of flatus"
+    ],
+    answer: 2,
+    concept: "Hemodynamic Decline",
+    rationale: "A sudden BP drop with tachycardia post-op suggests hemorrhage or hypovolemic shock. Immediate intervention required — assess wound, IV fluids, notify provider.",
+    others: {
+      "0": "Hemoglobin 11.8 is mildly low but not emergent.",
+      "1": "Pain 4/10 is manageable and not urgent.",
+      "3": "Soft non-distended abdomen with flatus indicates returning GI function."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient is 4 hours post-op and has been receiving IV morphine for pain. The nurse finds the patient sleepy but arousable to voice, RR 7, SpO₂ 88% on room air, pinpoint pupils. Which is the priority action?",
+    options: [
+      "Stop opioids; apply oxygen, prepare to give naloxone, notify provider",
+      "Administer the next scheduled morphine dose as ordered",
+      "Reposition the patient and reassess in 30 minutes",
+      "Encourage the patient to take deep breaths and ambulate"
+    ],
+    answer: 0,
+    concept: "Opioid-Induced Respiratory Depression",
+    rationale: "Classic opioid toxicity triad: depressed level of consciousness, respiratory depression (RR <10), pinpoint pupils. Priority: stop further opioids, apply oxygen, prepare/give naloxone (start with low dose 0.04-0.4 mg IV, can repeat) — naloxone may need re-dosing because half-life is shorter than morphine. Notify provider and assess for cause. Continuing opioids could be fatal. Pasero Opioid-Induced Sedation Scale (POSS) helps assess risk.",
+    others: {
+      "1": "Giving more opioid in active respiratory depression is fatal.",
+      "2": "Repositioning alone doesn't reverse respiratory depression.",
+      "3": "Patient is too sedated for ambulation and deep breathing won't fix opioid toxicity."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient who has been NPO post-surgery suddenly reports sharp, severe chest pain and dyspnea. The patient appears anxious with O₂ sat 86%. What is the priority action?",
+    options: [
+      "Administer oxygen, elevate the head of the bed, notify provider",
+      "Encourage the patient to take slow deep breaths and reassess in 30 minutes",
+      "Help the patient ambulate to improve circulation",
+      "Apply warm compresses to the chest for comfort"
+    ],
+    answer: 0,
+    concept: "PE Recognition",
+    rationale: "Sudden chest pain, dyspnea, and hypoxia post-op suggest pulmonary embolism. Administer oxygen, elevate head of bed, stay with the patient, and notify provider immediately.",
+    others: {
+      "1": "Reassess in 30 min is dangerous delay for suspected PE.",
+      "2": "Ambulation is contraindicated with suspected PE.",
+      "3": "Warm compresses do not treat or address PE."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient on day 1 has a Foley catheter. The provider has not yet ordered removal. Which action is most appropriate?",
+    options: [
+      "Question the provider about removal — Foley should come out within 24 hours",
+      "Wait for provider order before raising the issue",
+      "Remove the Foley independently as standard policy",
+      "Leave the Foley in place for at least 5 days for accuracy"
+    ],
+    answer: 0,
+    concept: "Foley Advocacy",
+    rationale: "Foley catheters should be removed within 24 hours post-op to reduce CAUTI risk. The nurse should advocate for timely removal by communicating with the provider.",
+    others: {
+      "1": "Waiting passively delays removal and increases infection risk.",
+      "2": "Removing without an order exceeds nursing scope.",
+      "3": "Five days far exceeds the safe window."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient declines to use the incentive spirometer because of pain. What is the best nursing action?",
+    options: [
+      "Document patient refusal and skip the IS use",
+      "Force the patient to use the spirometer immediately",
+      "Administer pain medication, then encourage spirometer use",
+      "Remove the spirometer from the bedside until pain resolves"
+    ],
+    answer: 2,
+    concept: "Pain-Limited Pulmonary Toileting",
+    rationale: "Administer pain medication promptly so the patient can tolerate breathing exercises. Pain control enables pulmonary toileting and prevents atelectasis.",
+    others: {
+      "0": "Skipping IS leads to atelectasis and pneumonia.",
+      "1": "Forcing care violates patient autonomy.",
+      "3": "Removing the device prevents the very intervention needed."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient on day 3 has not had a bowel movement and reports abdominal cramping. Bowel sounds are present. What intervention should the nurse implement first?",
+    options: [
+      "Insert a nasogastric tube for decompression",
+      "Administer a soap-suds enema immediately",
+      "Hold all oral intake until stool is passed",
+      "Encourage early ambulation, hydration, and stool softeners"
+    ],
+    answer: 3,
+    concept: "Constipation First-Line",
+    rationale: "Early ambulation is the priority intervention for post-op constipation, along with hydration and stool softeners.",
+    others: {
+      "0": "NG decompression is for ileus or obstruction, not simple constipation.",
+      "1": "Enemas are not first-line; conservative measures are tried first.",
+      "2": "Holding oral intake worsens dehydration and constipation."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "An 82-year-old patient is post-op day 2 from a hip ORIF and develops new confusion, fluctuating attention, and is alternately drowsy then agitated. Vital signs stable, SpO₂ 96%. The patient was alert and oriented pre-op. Which is most likely?",
+    options: [
+      "Post-op delirium — multifactorial, requires workup for treatable causes",
+      "Pre-existing dementia that was undiagnosed before surgery",
+      "Normal post-op recovery in elderly patients",
+      "Stroke from a perioperative cardiovascular event"
+    ],
+    answer: 0,
+    concept: "Post-Op Delirium in Elderly",
+    rationale: "Post-op delirium is COMMON in elderly (up to 50% after hip surgery) — characterized by acute onset, fluctuating attention, altered consciousness. NOT normal aging. Multifactorial causes: pain, opioids/benzodiazepines, sleep disruption, dehydration, electrolyte imbalances, infection (UTI/pneumonia), hypoxia, anesthesia. Workup: review meds, assess pain, check labs/cultures, oxygenation. Prevention: minimize benzos, manage pain non-opioid when possible, frequent reorientation, family at bedside, sleep/wake cycle support.",
+    others: {
+      "1": "Acute fluctuating confusion is delirium, not stable dementia (which is gradual).",
+      "2": "Confusion is NEVER \"normal\" in elderly post-op — needs evaluation.",
+      "3": "Stroke causes focal deficits, not fluctuating attention/agitation pattern."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "Which post-op patient has the highest risk for DVT?",
+    options: [
+      "A 25-year-old after appendectomy who is ambulating",
+      "A 35-year-old after laparoscopic cholecystectomy",
+      "A 40-year-old after outpatient knee arthroscopy",
+      "A 70-year-old after total hip replacement on bedrest"
+    ],
+    answer: 3,
+    concept: "DVT Risk Stratification",
+    rationale: "Older age, major orthopedic surgery, and bedrest combine to make this patient highest risk for DVT. Major joint replacement is a top DVT risk factor.",
+    others: {
+      "0": "Young and ambulatory — low risk.",
+      "1": "Laparoscopic procedures and quicker recovery = lower risk.",
+      "2": "Outpatient minor procedure = low risk."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "Which combination of nursing interventions BEST reflects the surgical site infection (SSI) prevention bundle?",
+    options: [
+      "Antibiotic within 60 min before incision; clip (don't shave) skin; maintain normothermia and glucose control",
+      "Antibiotic infused 4 hours before incision; clip skin with razor; warm patient post-op only",
+      "Skip prophylactic antibiotics if patient is healthy; shave skin to remove all hair; allow temperature to drop in OR",
+      "Antibiotics for 7 days post-op routinely; warm only the OR room; restrict ambulation 5 days post-op"
+    ],
+    answer: 0,
+    concept: "SSI Prevention Bundle",
+    rationale: "Evidence-based SSI prevention bundle: (1) prophylactic antibiotic infused within 60 min before incision (120 min for vancomycin/fluoroquinolones), (2) hair removal by CLIPPING not shaving (shaving causes microabrasions), (3) maintain perioperative normothermia, (4) tight glucose control (<180 mg/dL), (5) chlorhexidine skin prep, (6) appropriate antibiotic discontinuation post-op (typically <24h). Each component is independently supported.",
+    others: {
+      "1": "Antibiotic 4 hours before is too early; razor shaving causes infection; warming only post-op misses intra-op.",
+      "2": "Skipping prophylaxis, shaving, and accepting hypothermia all increase SSI risk.",
+      "3": "Routine 7-day post-op antibiotics promote resistance and don't reduce SSI; early ambulation reduces complications."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient is being instructed on use of anti-embolism stockings. Which patient statement requires correction?",
+    options: [
+      "\"I will wear them during the day to keep blood flowing.\"",
+      "\"I will roll them down at night so they don't bother me.\"",
+      "\"I will take them off briefly each day for skin care.\"",
+      "\"I will tell my nurse if I notice any skin breakdown.\""
+    ],
+    answer: 1,
+    concept: "Stocking Misuse",
+    rationale: "Rolling stockings down creates a tourniquet effect that worsens venous return and can cause DVT. The patient needs more teaching.",
+    others: {
+      "0": "Correct — daytime wear promotes venous return.",
+      "2": "Correct — brief removal allows skin assessment.",
+      "3": "Correct — skin breakdown reporting is appropriate."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient is post-op day 5 from abdominal surgery. The patient still has no flatus, abdomen is distended, bowel sounds are absent, and the patient reports nausea. The patient has been NPO. Which interpretation is most accurate?",
+    options: [
+      "Normal post-op recovery — bowel function returns at 7-10 days routinely",
+      "Prolonged paralytic ileus — needs evaluation, possibly NG decompression and continued NPO",
+      "Patient is malingering and trying to extend the hospital stay",
+      "Mechanical obstruction is impossible after abdominal surgery"
+    ],
+    answer: 1,
+    concept: "Prolonged Paralytic Ileus",
+    rationale: "Normal post-op ileus resolves within 24-72 hours (small bowel returns first, then stomach, then colon). Day 5 with no flatus, distension, absent bowel sounds, and nausea suggests prolonged paralytic ileus or mechanical obstruction (adhesions). Evaluation: imaging (KUB, possibly CT), NG decompression for symptom relief, continued NPO with IV fluids, electrolyte correction (especially potassium), opioid minimization, ambulation when possible.",
+    others: {
+      "0": "Bowel function should return by day 3-4; day 5 with these signs is prolonged ileus.",
+      "2": "Malingering accusation is unprofessional and ignores real clinical findings.",
+      "3": "Mechanical obstruction (especially from adhesions) IS a known post-abdominal-surgery complication."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient with a known latex allergy is in PACU after surgery. The patient develops sudden hives, facial swelling, wheezing, and BP drops to 80/50. The chart notes \"latex-free OR set up.\" Which complication is most likely?",
+    options: [
+      "Anesthesia-related malignant hyperthermia delayed reaction",
+      "Routine post-op shivering and hypothermia response",
+      "Latex anaphylaxis from missed item or cross-reactive food/medication",
+      "Normal anesthesia recovery — symptoms will resolve quickly"
+    ],
+    answer: 2,
+    concept: "Post-Op Latex Anaphylaxis",
+    rationale: "Even with \"latex-free\" OR setup, latex anaphylaxis can occur from missed items (gloves on transport, blood pressure cuffs, IV tubing ports, urinary catheter ports) or cross-reactive substances (latex-fruit syndrome — banana, avocado, kiwi, chestnut). Treatment: stop any latex source, give IM epinephrine, antihistamines, corticosteroids, oxygen, IV fluids. Recheck the entire patient environment for any remaining latex items.",
+    others: {
+      "0": "MH presents with hyperthermia and rigidity, not urticaria/swelling/hypotension.",
+      "1": "Shivering is from cold, not anaphylaxis features.",
+      "3": "Hives, swelling, hypotension, and wheezing are NEVER normal recovery."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient on day 1 has a clean dry incision with mild redness around the edges and no drainage. How should the nurse interpret this?",
+    options: [
+      "These are signs of infection — notify the provider",
+      "These are signs of healing within normal limits",
+      "These are signs of impending dehiscence",
+      "These are signs of internal bleeding requiring urgent action"
+    ],
+    answer: 1,
+    concept: "Normal Healing",
+    rationale: "A clean dry incision with mild local redness on day 1 is normal early healing. Worry signs are spreading redness, warmth, swelling, increasing pain, and purulent drainage.",
+    others: {
+      "0": "Mild local redness is expected; spreading redness suggests infection.",
+      "2": "Dehiscence presents with wound separation, not just edge redness.",
+      "3": "Internal bleeding presents with shock signs, not local edge redness."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A patient is post-op day 4 from a colon resection. Vital signs: T 38.6°C (101.5°F), HR 116, BP 100/64, abdomen tense and tender, increased pain not relieved by opioids, and the patient reports feeling \"much worse today than yesterday.\" Which complication does the nurse suspect?",
+    options: [
+      "Expected post-op pain pattern — increase analgesia",
+      "Mild post-op constipation requiring laxative",
+      "Anastomotic leak with developing peritonitis",
+      "Wound dehiscence at the skin level"
+    ],
+    answer: 2,
+    concept: "Anastomotic Leak Post-Bowel-Resection",
+    rationale: "Anastomotic leak typically presents post-op day 3-7 with: fever, tachycardia, worsening pain (not improving), abdominal tenderness/peritoneal signs, possibly drain output changing color. This is a SURGICAL EMERGENCY — needs CT imaging, NPO, broad-spectrum antibiotics, possible return to OR. Untreated leak progresses to sepsis. Day-by-day worsening is the key red flag — normal post-op course should improve.",
+    others: {
+      "0": "Worsening pain on day 4 is NOT expected; should be improving.",
+      "1": "Constipation does not cause fever and tachycardia.",
+      "3": "Dehiscence is wound separation — different presentation; this picture fits internal leak."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient has the following findings. Which should the nurse address FIRST?",
+    options: [
+      "O₂ sat 88% on room air with shallow respirations",
+      "Mild itching at the IV site",
+      "Pain rated 5/10 at the incision",
+      "Clear urine output of 60 mL in the last hour"
+    ],
+    answer: 0,
+    concept: "Hypoxia Priority",
+    rationale: "O₂ sat 88% with shallow respirations indicates hypoxia and possible atelectasis or pneumonia — airway and breathing always come first.",
+    others: {
+      "1": "IV site itching is mild and not urgent.",
+      "2": "Pain 5/10 is manageable; not the priority over hypoxia.",
+      "3": "Urine output of 60 mL/hr is adequate."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient has BP 92/58, HR 118, urine output 15 mL in the last hour, and pallor. The nurse assesses all IV lines and flushes them. What additional priority intervention is appropriate?",
+    options: [
+      "Decrease IV fluid rate to prevent overload",
+      "Apply warming blankets to raise body temperature",
+      "Administer additional IV fluids as ordered",
+      "Place patient in Trendelenburg for an extended period"
+    ],
+    answer: 2,
+    concept: "IV Fluid Resuscitation",
+    rationale: "Hypovolemic shock is prevented and treated by IV fluid administration. After confirming patent IV lines, give additional fluids as ordered.",
+    others: {
+      "0": "Decreasing fluids worsens hypovolemia.",
+      "1": "Warming does not address volume loss.",
+      "3": "Trendelenburg can compromise breathing and is not a sustained position."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A nurse is assigning post-op care tasks. Which task is appropriate to delegate to assistive personnel (UAP)?",
+    options: [
+      "Initial assessment of a new evisceration",
+      "Teaching the patient about incentive spirometer use",
+      "Ambulating a stable post-op patient on day 2",
+      "Evaluating wound drainage characteristics"
+    ],
+    answer: 2,
+    concept: "Delegation",
+    rationale: "Ambulating a stable post-op patient is appropriate to delegate to UAP. Assessment, teaching, and evaluation of complications require nursing judgment.",
+    others: {
+      "0": "Evisceration assessment requires the RN.",
+      "1": "Teaching is an RN responsibility.",
+      "3": "Drainage evaluation requires nursing judgment."
+    }
+  },
+  {
+    topic: "Postoperative",
+    type: "standard",
+    stem: "A post-op patient develops sudden severe abdominal pain and reports feeling like \"something gave way.\" Which assessment finding would confirm dehiscence?",
+    options: [
+      "Increased bowel sounds and flatus",
+      "Visible separation of the wound layers",
+      "Mild redness at the incision edges",
+      "Pink-tinged serosanguineous drainage"
+    ],
+    answer: 1,
+    concept: "Dehiscence Assessment",
+    rationale: "Dehiscence is partial or total separation of wound layers. The \"something gave way\" sensation followed by visible separation is classic.",
+    others: {
+      "0": "Bowel sounds and flatus indicate returning GI function, not dehiscence.",
+      "2": "Mild edge redness is normal early healing.",
+      "3": "Serosanguineous drainage is normal healing."
+    }
+  }
+];
+
+        // === QUIZ ENGINE ===
+let currentQ = 0;
+let totalPts = 0;
+let answers = [];
+let selectedOption = null;
+
+function begin() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  renderQuestion();
+}
+
+function extractLabs(stem) {
+  const labs = [];
+  const seen = new Set();
+
+  // Each pattern: { re, name, unit (or unitFromMatch index), rangeFromMatch (optional) }
+  const patterns = [
+    { re: /\bBP\s+(\d{2,3}\/\d{2,3})(?:\s*\((?:baseline|normal)\s+([\d\/<>≥≤\-–\s]+)\))?/gi, name: 'BP', unit: 'mmHg', rangeIdx: 2, ranglePrefix: 'baseline ' },
+    { re: /\bHR\s+(\d{2,3})\b/gi, name: 'HR', unit: 'bpm' },
+    { re: /\bpulse\s+(\d{2,3})\b/gi, name: 'Pulse', unit: 'bpm' },
+    { re: /\b(?:temperature|temp)[\s:]+(\d{2,3}(?:\.\d)?)\s*°?\s*([CF])\b/gi, name: 'Temp', unitIdx: 2, unitPrefix: '°' },
+    { re: /\b(?:respiratory rate|RR)\s+(\d{1,3})(?:\/min)?(?:\s*\(was\s+(\d+)\/?(?:min)?\))?\b/gi, name: 'RR', unit: '/min', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:urine output|UOP)\s+(\d{1,3})\s*mL\/hr(?:\s*\(was\s+(\d+)\s*mL\/hr\))?\b/gi, name: 'UOP', unit: 'mL/hr', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:bedside\s+)?(?:blood\s+)?glucose(?:\s+is|\s+at\s+\d+\s+(?:hour|min)\w*)?\s+(?:is\s+)?(\d{1,3})\s*mg\/dL(?:\s*\((?:normal[^)]*?|cutoff[^)]*?)\))?/gi, name: 'Glucose', unit: 'mg/dL' },
+    { re: /\b(?:hematocrit|HCT)\s+of\s+(\d{2,3})%(?:\s*\(normal[^)]*?\))?/gi, name: 'HCT', unit: '%' },
+    { re: /\bplatelets\s+([\d,]+)\s*\/?mm\u00b3?(?:\s*\(normal[^)]*?\))?/gi, name: 'Platelets', unit: '/mm³' },
+    { re: /\bAST\s+(\d{1,4})\s*U\/L(?:\s*\(normal[^)]*?\))?/gi, name: 'AST', unit: 'U/L' },
+    { re: /(?:\u03b2-hCG|beta-hCG|hCG)(?:\s+(?:is|of))?\s+([\d,]+)\s*mIU\/mL/gi, name: 'β-hCG', unit: 'mIU/mL' },
+    { re: /\bfundal height\s+of\s+(\d{1,3})\s*cm(?:\s*\((?:expected|normal)\s*~?\s*(\d{1,3})\s*cm\))?/gi, name: 'Fundal Ht', unit: 'cm', rangeIdx: 2, ranglePrefix: 'expected ~' },
+    { re: /\bAFI\s+(\d{1,3})\s*cm/gi, name: 'AFI', unit: 'cm' },
+    { re: /\b1-hour\b[^.]*?(\d{2,3})\s*mg\/dL/gi, name: '1-hr GCT', unit: 'mg/dL' },
+    { re: /(?:weighing|weighs|estimated at|EFW)\s+(\d{3,4})\s*g\b/gi, name: 'Weight', unit: 'g' },
+
+    // Electrolytes
+    { re: /\b(?:sodium|Na\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{2,3})\s*mEq\/L/gi, name: 'Na+', unit: 'mEq/L' },
+    { re: /\b(?:potassium|K\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mEq\/L/gi, name: 'K+', unit: 'mEq/L' },
+    { re: /\b(?:calcium|Ca\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Ca', unit: 'mg/dL' },
+    { re: /\b(?:magnesium|Mg\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mg\/dL/gi, name: 'Mg', unit: 'mg/dL' },
+
+    // CBC additions
+    { re: /\b(?:hemoglobin|Hgb|Hb)\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*(?:g\/dL)?/gi, name: 'Hgb', unit: 'g/dL' },
+    { re: /\bANC\s+(?:of\s+|is\s+)?([\d,]+)/gi, name: 'ANC', unit: '/mm³' },
+    { re: /\bWBC\s+(?:of\s+|count of\s+|is\s+)?([\d,]+(?:\.\d)?)/gi, name: 'WBC', unit: '/mm³' },
+
+    // Renal
+    { re: /\b(?:creatinine|Cr)\s+(?:of\s+)?(\d(?:\.\d{1,2})?)\s*mg\/dL/gi, name: 'Cr', unit: 'mg/dL' },
+    { re: /\bBUN\s+(?:of\s+)?(\d{1,3})(?:\s*mg\/dL)?/gi, name: 'BUN', unit: 'mg/dL' },
+
+    // Coag
+    { re: /\bINR\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)/gi, name: 'INR', unit: '' },
+
+    // Acid-base (DKA)
+    { re: /\bpH\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)\b/gi, name: 'pH', unit: '' },
+    { re: /\b(?:bicarb|HCO3)\s+(?:of\s+|is\s+)?(\d{1,2})\b/gi, name: 'HCO3', unit: 'mEq/L' },
+
+    // Other
+    { re: /\b(?:hemoglobin\s+)?A1[cC]\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*%?/gi, name: 'A1c', unit: '%' },
+    { re: /\b(?:total\s+)?bilirubin\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Bilirubin', unit: 'mg/dL' },
+
+    // Osmolality
+    { re: /\b(?:serum\s+|urine\s+)?osmolality\s+(?:of\s+|is\s+)?(\d{2,3})\s*mOsm\/kg/gi, name: 'Osmolality', unit: 'mOsm/kg' },
+
+    // Specific gravity
+    { re: /\b(?:urine\s+)?specific gravity\s+(?:of\s+|is\s+)?(\d\.\d{3})/gi, name: 'Sp Gravity', unit: '' }
+  ];
+
+  for (const pat of patterns) {
+    const re = new RegExp(pat.re.source, pat.re.flags);
+    let m;
+    while ((m = re.exec(stem)) !== null) {
+      const val = m[1];
+      const key = pat.name + ':' + val;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      let unit = pat.unit || '';
+      if (pat.unitIdx && m[pat.unitIdx]) {
+        unit = (pat.unitPrefix || '') + m[pat.unitIdx];
+      }
+
+      let range = '';
+      if (pat.rangeIdx && m[pat.rangeIdx]) {
+        range = (pat.ranglePrefix || '') + m[pat.rangeIdx];
+      }
+
+      // First, check if m[0] itself contains a parenthetical (greedy patterns consume it)
+      if (!range) {
+        const innerParen = m[0].match(/\(([^)]+)\)/);
+        if (innerParen && /normal|baseline|expected|cutoff|target|was/i.test(innerParen[1])) {
+          range = innerParen[1].trim();
+        }
+      }
+
+      // Otherwise look ahead in the full stem (allow optional unit text before paren)
+      if (!range) {
+        const afterIdx = m.index + m[0].length;
+        const tail = stem.slice(afterIdx, afterIdx + 100);
+        const parenMatch = tail.match(/^[^()]{0,30}?\(([^)]+)\)/);
+        if (parenMatch && /normal|baseline|expected|cutoff|target|was|therapeutic|toxic/i.test(parenMatch[1])) {
+          range = parenMatch[1].trim();
+        }
+      }
+
+      labs.push({ name: pat.name, value: val, unit, range });
+    }
+  }
+
+  return labs;
+}
+
+function renderLabStrip(labs) {
+  if (!labs || labs.length === 0) return '';
+  // Skip vitals from the strip — students should know normal ranges for these
+  const VITALS_DENYLIST = new Set(['BP', 'HR', 'Pulse', 'RR', 'Temp', 'SpO2', 'Pain']);
+  const filtered = labs.filter(function(l) { return !VITALS_DENYLIST.has(l.name); });
+  if (filtered.length === 0) return '';
+  const items = filtered.map(function(l) {
+    const range = l.range ? '<div class="lab-range">' + escapeStemHTML(l.range) + '</div>' : '';
+    const unit = l.unit ? ' <span class="lab-value-unit">' + escapeStemHTML(l.unit) + '</span>' : '';
+    return '<div class="lab-item"><div class="lab-name">' + escapeStemHTML(l.name) + '</div><div class="lab-value">' + escapeStemHTML(l.value) + unit + '</div>' + range + '</div>';
+  }).join('');
+  return '<div class="lab-strip"><div class="lab-strip-label">Clinical Data</div><div class="lab-row">' + items + '</div></div>';
+}
+
+function escapeStemHTML(s) {
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOption = null;
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+  document.getElementById('progress').style.width = `${(currentQ / questions.length) * 100}%`;
+  const __labs = q.labs || extractLabs(q.stem);
+  const __labStrip = renderLabStrip(__labs);
+  document.getElementById('q-stem').innerHTML = '<div>' + escapeStemHTML(q.stem) + '</div>' + __labStrip;
+  const optsHtml = q.options.map((opt, i) => `
+    <div class="option" data-idx="${i}" onclick="selectOption(${i})">
+      <span class="option-letter">${String.fromCharCode(65+i)}.</span>
+      <span>${opt}</span>
+    </div>
+  `).join('');
+  document.getElementById('q-options').innerHTML = optsHtml;
+  document.getElementById('rationale-area').classList.add('hidden');
+  document.getElementById('rationale-area').innerHTML = '';
+  document.getElementById('submit-btn').classList.remove('hidden');
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('next-btn').classList.add('hidden');
+}
+
+function selectOption(idx) {
+  selectedOption = idx;
+  document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.option[data-idx="${idx}"]`).classList.add('selected');
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+  const q = questions[currentQ];
+  const correct = q.answer;
+  const isCorrect = selectedOption === correct;
+  const pts = isCorrect ? 1 : 0;
+  totalPts += pts;
+  answers.push({ q, selected: selectedOption, correct, pts });
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    el.onclick = null;
+    if (i === correct) el.classList.add('correct');
+    else if (i === selectedOption) el.classList.add('wrong');
+  });
+
+  let othersHtml = '';
+  if (q.others) {
+    othersHtml = '<div class="others-list">';
+    Object.keys(q.others).forEach(k => {
+      othersHtml += `<div><strong>${String.fromCharCode(65+parseInt(k))}.</strong> ${q.others[k]}</div>`;
+    });
+    othersHtml += '</div>';
+  }
+
+  const ratHtml = `
+    <div class="rationale">
+      <span class="concept-pill">${q.concept}</span>
+      <div><strong>${isCorrect ? 'Correct.' : 'Incorrect.'}</strong> ${q.rationale}</div>
+      ${q.deepExplanation ? `<div style="margin-top:8px; color: var(--ink-soft);">${q.deepExplanation}</div>` : ''}
+      ${othersHtml}
+    </div>
+  `;
+  const rArea = document.getElementById('rationale-area');
+  rArea.innerHTML = ratHtml;
+  rArea.classList.remove('hidden');
+  document.getElementById('submit-btn').classList.add('hidden');
+  document.getElementById('next-btn').classList.remove('hidden');
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.remove('hidden');
+  const pct = (totalPts / questions.length) * 100;
+  const scoreEl = document.getElementById('r-score');
+  scoreEl.textContent = `${pct.toFixed(0)}%`;
+  if (pct >= 85) scoreEl.classList.add('pass');
+  else if (pct >= 70) scoreEl.classList.add('borderline');
+  else scoreEl.classList.add('fail');
+  document.getElementById('r-pts').textContent = `${totalPts.toFixed(1)} / ${questions.length} points`;
+
+  let msg = '';
+  if (pct >= 90) msg = 'Excellent — you handle priority decisions well.';
+  else if (pct >= 77) msg = 'Passing — review missed scenarios for the test.';
+  else if (pct >= 60) msg = 'Below passing — focus on priority and safety judgments.';
+  else msg = 'This chapter needs deeper review. Re-read scenarios and retake.';
+  document.getElementById('r-msg').textContent = msg;
+
+  const missed = answers.filter(a => a.pts < 1);
+  if (missed.length > 0) {
+    let html = '<h3>Missed Concepts</h3>';
+    missed.forEach(m => {
+      html += `<div class="missed-item">
+        <div class="stem">${m.q.stem}</div>
+        <div class="ans">Correct: ${String.fromCharCode(65+m.correct)}. ${m.q.options[m.correct]}</div>
+        <div class="rat">${m.q.rationale}</div>
+      </div>`;
+    });
+    document.getElementById('missed-section').innerHTML = html;
+  }
+
+  const result = {
+    pct: parseFloat(pct.toFixed(1)),
+    pts: parseFloat(totalPts.toFixed(1)),
+    total: questions.length,
+    date: new Date().toISOString().split('T')[0]
+  };
+  localStorage.setItem('score_postoperative_deepdrill', JSON.stringify(result));
+}
+</script>
+</body>
+</html>

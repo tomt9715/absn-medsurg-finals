@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedSurg Finals — Study Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c;
+  --teal: #0d9488; --teal-pale: #f0fdfa;
+  --purple: #7c3aed; --purple-pale: #f5f3ff;
+  --gold: #f59e0b; --gold-pale: #fef3c7;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --muted-soft: #9ca3af;
+  --bg: #fafaf7; --card: #ffffff; --line: #e5e0d5; --line-soft: #f0ebe0;
+  --pass: #059669; --pass-bg: #ecfdf5;
+  --partial: #d97706; --partial-bg: #fffbeb;
+  --fail: #dc2626; --fail-bg: #fef2f2;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; padding: 32px 16px 80px; min-height: 100vh; }
+.container { max-width: 980px; margin: 0 auto; }
+
+.hero { text-align: center; margin-bottom: 32px; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--teal); text-transform: uppercase; margin-bottom: 10px; }
+h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy); margin-bottom: 8px; line-height: 1.1; }
+.tagline { color: var(--muted); font-size: 15px; max-width: 540px; margin: 0 auto; }
+
+/* Top dashboard */
+.top-dashboard { display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px 32px; margin-bottom: 32px; }
+.progress-ring-wrap { position: relative; width: 120px; height: 120px; }
+.progress-ring-svg { transform: rotate(-90deg); }
+.progress-ring-bg { fill: none; stroke: var(--line); stroke-width: 10; }
+.progress-ring-fill { fill: none; stroke: var(--teal); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.6s; }
+.progress-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-pct { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--navy); line-height: 1; }
+.ring-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
+.dashboard-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.dash-stat { text-align: left; }
+.dash-num { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--navy); display: block; line-height: 1; margin-bottom: 4px; }
+.dash-num.pass { color: var(--pass); }
+.dash-num.partial { color: var(--partial); }
+.dash-num.fail { color: var(--fail); }
+.dash-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+
+/* Simulator */
+.simulator-card { background: var(--navy); border-radius: 10px; padding: 24px 32px; margin-bottom: 32px; color: white; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+.sim-eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
+.sim-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: white; margin-bottom: 4px; }
+.sim-desc { color: rgba(255,255,255,0.7); font-size: 13px; }
+.sim-action { text-align: center; }
+.sim-score { font-family: 'DM Serif Display', serif; font-size: 44px; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+.sim-score.no-attempt { color: rgba(255,255,255,0.4); font-size: 22px; font-style: italic; }
+.sim-status { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; min-height: 12px; }
+.sim-status.pass { color: var(--gold); }
+.sim-status.fail { color: #fca5a5; }
+.sim-btn { background: var(--gold); color: var(--navy); border: none; padding: 10px 24px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+.sim-btn:hover { background: #d97706; }
+
+/* Continue studying */
+.continue-section { background: linear-gradient(135deg, #fff8e6 0%, #fef3c7 100%); border: 1px solid var(--gold); border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+.continue-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.continue-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #92400e; text-transform: uppercase; }
+.continue-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: #92400e; opacity: 0.7; letter-spacing: 0.5px; }
+.continue-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.continue-item { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; text-decoration: none; color: var(--ink); transition: all 0.15s; }
+.continue-item:hover { border-color: var(--gold); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.continue-item-name { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--navy); margin-bottom: 4px; line-height: 1.2; }
+.continue-item-meta { display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono', monospace; font-size: 10px; }
+.continue-item-status { color: var(--muted); }
+.continue-item-weight { background: var(--bg); padding: 2px 6px; border-radius: 3px; color: var(--ink-soft); }
+
+/* Filter bar */
+.filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.filter-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-right: 4px; }
+.filter-chip { background: var(--card); border: 1px solid var(--line); padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-soft); border-radius: 100px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+.filter-chip:hover { border-color: var(--teal); color: var(--teal); }
+.filter-chip.active { background: var(--navy); color: white; border-color: var(--navy); }
+.filter-spacer { flex: 1; }
+.expand-toggle { background: none; border: 1px solid var(--line); padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); border-radius: 100px; cursor: pointer; letter-spacing: 0.5px; }
+.expand-toggle:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+/* System group */
+.system-group { margin-bottom: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.system-header { padding: 14px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; user-select: none; transition: background 0.1s; }
+.system-header:hover { background: var(--bg); }
+.system-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0; }
+.system-name { font-family: 'DM Serif Display', serif; font-size: 19px; color: var(--navy); flex: 1; }
+.system-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-right: 12px; }
+.system-progress-bar { width: 80px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-right: 12px; }
+.system-progress-fill { height: 100%; background: var(--teal); transition: width 0.4s; }
+.chevron { color: var(--muted); transition: transform 0.2s; font-family: 'DM Mono', monospace; font-size: 14px; }
+.system-group.collapsed .chevron { transform: rotate(-90deg); }
+.system-group.collapsed .system-body { display: none; }
+.system-body { border-top: 1px solid var(--line-soft); }
+
+/* Topic rows */
+.topic-row { display: grid; grid-template-columns: 50px 1fr 1.2fr 1.2fr; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--line-soft); transition: background 0.1s; }
+.topic-row:last-child { border-bottom: none; }
+.topic-row:hover { background: var(--bg); }
+.topic-ch { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+.topic-info { min-width: 0; }
+.topic-name { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--navy); margin-bottom: 2px; line-height: 1.2; }
+.topic-desc { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Quiz cells */
+.quiz-cell { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; text-decoration: none; color: var(--ink); border: 1.5px solid var(--line); transition: all 0.15s; min-width: 0; background: var(--card); position: relative; }
+.quiz-cell.kc { border-color: #99f6e4; }
+.quiz-cell.dd { border-color: #ddd6fe; }
+.quiz-cell.kc:hover { border-color: var(--teal); background: var(--teal-pale); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(13, 148, 136, 0.15); }
+.quiz-cell.dd:hover { border-color: var(--purple); background: var(--purple-pale); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(124, 58, 237, 0.15); }
+.quiz-cell.no-score.kc { background: var(--teal-pale); }
+.quiz-cell.no-score.dd { background: var(--purple-pale); }
+.quiz-cell.coming-soon { background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(0,0,0,0.025) 6px, rgba(0,0,0,0.025) 12px), var(--bg); border: 1.5px dashed var(--line); cursor: not-allowed; opacity: 0.55; filter: grayscale(0.5); }
+.quiz-cell.coming-soon:hover { background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(0,0,0,0.025) 6px, rgba(0,0,0,0.025) 12px), var(--bg); border-color: var(--line); transform: none; box-shadow: none; }
+.quiz-cell-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; flex-shrink: 0; min-width: 95px; font-weight: 600; }
+.quiz-cell-label.kc { color: var(--teal); }
+.quiz-cell-label.dd { color: var(--purple); }
+.quiz-cell.coming-soon .quiz-cell-label { color: var(--muted-soft); font-weight: 400; }
+.quiz-cell-score { font-family: 'DM Serif Display', serif; font-size: 20px; line-height: 1; flex-shrink: 0; min-width: 36px; }
+.quiz-cell-score.pass { color: var(--pass); }
+.quiz-cell-score.partial { color: var(--partial); }
+.quiz-cell-score.fail { color: var(--fail); }
+.quiz-cell-score.start { color: var(--ink); font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; min-width: auto; }
+.quiz-cell.kc .quiz-cell-score.start { color: var(--teal); }
+.quiz-cell.dd .quiz-cell-score.start { color: var(--purple); }
+.quiz-cell-score.soon { color: var(--muted-soft); font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.5px; text-transform: uppercase; min-width: auto; }
+.score-bar { flex: 1; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; min-width: 30px; }
+.score-bar-fill { height: 100%; transition: width 0.4s; }
+.score-bar-fill.pass { background: var(--pass); }
+.score-bar-fill.partial { background: var(--partial); }
+.score-bar-fill.fail { background: var(--fail); }
+.score-bar-fill.start.kc { background: var(--teal); width: 15%; opacity: 0.25; }
+.score-bar-fill.start.dd { background: var(--purple); width: 15%; opacity: 0.25; }
+.cta-arrow { color: var(--muted-soft); font-size: 14px; margin-left: auto; padding-left: 4px; transition: transform 0.15s; }
+.quiz-cell:hover .cta-arrow { transform: translateX(3px); }
+.quiz-cell.kc:hover .cta-arrow { color: var(--teal); }
+.quiz-cell.dd:hover .cta-arrow { color: var(--purple); }
+.quiz-cell.coming-soon .cta-arrow { display: none; }
+
+/* Donation footer */
+.donation-footer { margin-top: 48px; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 28px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.donation-text h3 { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--navy); margin-bottom: 6px; }
+.donation-text p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.3px; line-height: 1.6; max-width: 480px; }
+.donation-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+.donate-btn { padding: 10px 20px; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.donate-btn.venmo { background: #3396cd; color: white; }
+.donate-btn.venmo:hover { background: #2780b0; }
+.donate-btn.zelle { background: var(--navy); color: white; }
+.donate-btn.zelle:hover { background: var(--navy-soft); }
+.zelle-copied { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--pass); letter-spacing: 0.5px; display: none; margin-top: 4px; text-align: center; }
+
+.footer-bottom { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+.legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+.reset-btn { background: none; border: 1px solid var(--line); padding: 6px 12px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); border-radius: 4px; cursor: pointer; letter-spacing: 0.5px; }
+.reset-btn:hover { color: var(--fail); border-color: var(--fail); }
+
+@media (max-width: 720px) {
+  .top-dashboard { grid-template-columns: 1fr; gap: 20px; padding: 20px; text-align: center; }
+  .progress-ring-wrap { margin: 0 auto; }
+  .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+  .simulator-card { grid-template-columns: 1fr; text-align: center; }
+  .continue-list { grid-template-columns: 1fr; }
+  .topic-row { grid-template-columns: 1fr; gap: 8px; }
+  .topic-ch { display: none; }
+  h1 { font-size: 32px; }
+  .donation-footer { flex-direction: column; }
+  .modal-box { margin: 16px; padding: 28px 20px; }
+  .modal-steps { grid-template-columns: 1fr; }
+}
+
+/* ===== WELCOME MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10, 37, 64, 0.55);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; padding: 16px;
+}
+.modal-overlay.visible { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--card); border-radius: 14px; max-width: 580px; width: 100%;
+  overflow: hidden; transform: translateY(10px); transition: transform 0.2s;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.visible .modal-box { transform: translateY(0); }
+
+.modal-header {
+  background: var(--navy); padding: 28px 32px 24px;
+}
+.modal-header-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px;
+  color: var(--teal); text-transform: uppercase; margin-bottom: 8px;
+}
+.modal-header-title {
+  font-family: 'DM Serif Display', serif; font-size: 26px; color: #fff;
+  line-height: 1.15; margin-bottom: 6px;
+}
+.modal-header-sub {
+  font-family: 'Outfit', sans-serif; font-size: 13px; color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+
+.modal-body { padding: 24px 32px; }
+
+.modal-rows { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.modal-row {
+  display: grid; grid-template-columns: 36px 1fr; gap: 14px;
+  align-items: flex-start; padding: 14px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.modal-row:last-child { border-bottom: none; }
+.modal-row-icon {
+  width: 36px; height: 36px; border-radius: 7px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.modal-row-icon.kc { background: #f0fdfa; color: var(--teal); }
+.modal-row-icon.dd { background: #f5f3ff; color: var(--purple); }
+.modal-row-icon.dash { background: #eff6ff; color: #2563eb; }
+.modal-row-icon.sim { background: var(--gold-pale); color: #92400e; }
+.modal-row-title {
+  font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--navy);
+  margin-bottom: 3px; line-height: 1.2;
+}
+.modal-row-desc {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+  line-height: 1.6; letter-spacing: 0.2px;
+}
+
+.modal-notice {
+  background: var(--bg); border: 1px solid var(--line); border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0; padding: 12px 16px; margin-bottom: 22px;
+}
+.modal-notice-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
+  color: #92400e; text-transform: uppercase; margin-bottom: 5px; font-weight: 600;
+}
+.modal-notice-text {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-soft);
+  line-height: 1.7; letter-spacing: 0.1px;
+}
+
+.modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.modal-dismiss {
+  background: var(--navy); color: white; border: none; border-radius: 6px;
+  padding: 11px 26px; font-family: 'Outfit', sans-serif; font-size: 13px;
+  font-weight: 600; cursor: pointer; transition: background 0.15s; letter-spacing: 0.2px;
+}
+.modal-dismiss:hover { background: var(--navy-soft); }
+.modal-skip {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+  cursor: pointer; letter-spacing: 0.3px; background: none; border: none;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.modal-skip:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+<!-- Welcome Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-eyebrow">MedSurg I · Final Exam</div>
+      <div class="modal-header-title">Welcome to the Study Hub</div>
+      <div class="modal-header-sub">A quick overview before you start — takes 30 seconds.</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-rows">
+        <div class="modal-row">
+          <div class="modal-row-icon kc">KC</div>
+          <div>
+            <div class="modal-row-title">Knowledge Check</div>
+            <div class="modal-row-desc">Recall-based questions. Tests whether you know the core facts and concepts. Start here for any chapter you haven't touched yet.</div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-row-icon dd">DD</div>
+          <div>
+            <div class="modal-row-title">Deep Drill</div>
+            <div class="modal-row-desc">NCLEX-style clinical judgment. Apply what you know to patient scenarios. Do the KC first, then come back for the DD.</div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-row-icon dash">DB</div>
+          <div>
+            <div class="modal-row-title">Your Dashboard</div>
+            <div class="modal-row-desc">Tracks quizzes attempted, your average score, and how many are passing. Updates automatically as you complete quizzes.</div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-row-icon sim">75Q</div>
+          <div>
+            <div class="modal-row-title">Practice Simulator</div>
+            <div class="modal-row-desc">75-question final exam. Take it after you've covered all the chapters to simulate exam day.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-notice">
+        <div class="modal-notice-label">Score Storage</div>
+        <div class="modal-notice-text">Your scores are saved locally in your browser — not in the cloud. Always use the same browser on the same device to keep your progress. Clearing browser history or switching browsers will reset your scores. Incognito and private browsing mode will not save scores between sessions.</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-dismiss" onclick="closeModal()">Got it — start studying</button>
+        <button class="modal-skip" onclick="closeModal()">Don't show this again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="hero">
+  <div class="eyebrow">MedSurg I · Final Exam</div>
+  <h1>Med-Surgical Study Hub</h1>
+  <p class="tagline">Knowledge Checks build foundational recall. Deep Drills sharpen NCLEX-style judgment.</p>
+</div>
+
+<!-- Top dashboard -->
+<div class="top-dashboard">
+  <div class="progress-ring-wrap">
+    <svg class="progress-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+      <circle class="progress-ring-bg" cx="60" cy="60" r="50"></circle>
+      <circle class="progress-ring-fill" id="progress-ring" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"></circle>
+    </svg>
+    <div class="progress-ring-text">
+      <div class="ring-pct" id="ring-pct">0%</div>
+      <div class="ring-label">Attempted</div>
+    </div>
+  </div>
+  <div class="dashboard-stats">
+    <div class="dash-stat">
+      <span class="dash-num" id="stat-attempted">0</span>
+      <span class="dash-label">Quizzes Taken</span>
+    </div>
+    <div class="dash-stat">
+      <span class="dash-num pass" id="stat-passing">0</span>
+      <span class="dash-label">>=77% Passing</span>
+    </div>
+    <div class="dash-stat">
+      <span class="dash-num" id="stat-avg">--</span>
+      <span class="dash-label">Average Score</span>
+    </div>
+    <div class="dash-stat">
+      <span class="dash-num" id="stat-bank">0</span>
+      <span class="dash-label">Practice Bank</span>
+    </div>
+  </div>
+</div>
+
+<!-- Simulator -->
+<div class="simulator-card">
+  <div>
+    <div class="sim-eyebrow">MedSurg I Final · 75 Q · Pass at 77%</div>
+    <div class="sim-title">MedSurg Final Practice Test</div>
+    <div class="sim-desc">Fresh questions not in the topic quizzes.</div>
+  </div>
+  <div class="sim-action">
+    <div class="sim-score no-attempt" id="sim-score">Not attempted</div>
+    <div class="sim-status" id="sim-status">&nbsp;</div>
+    <a href="medsurg_exam_simulator.html" class="sim-btn" id="sim-btn">Start Practice Test</a>
+  </div>
+</div>
+
+<!-- Continue studying -->
+<div class="continue-section" id="continue-section" style="display: none;">
+  <div class="continue-header">
+    <div class="continue-title">Continue Studying</div>
+    <div class="continue-meta">Your weakest or untouched chapters</div>
+  </div>
+  <div class="continue-list" id="continue-list"></div>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <span class="filter-label">Filter</span>
+  <button class="filter-chip active" data-filter="all" onclick="applyFilter(this, 'all')">All</button>
+  <button class="filter-chip" data-filter="untouched" onclick="applyFilter(this, 'untouched')">Untouched</button>
+  <button class="filter-chip" data-filter="weak" onclick="applyFilter(this, 'weak')">Weak (&lt;77%)</button>
+  <button class="filter-chip" data-filter="strong" onclick="applyFilter(this, 'strong')">Strong (>=85%)</button>
+  <button class="filter-chip" data-filter="highweight" onclick="applyFilter(this, 'highweight')">High Weight (>=4)</button>
+  <span class="filter-spacer"></span>
+  <button class="expand-toggle" id="expand-toggle" onclick="toggleAllGroups()">Collapse all</button>
+</div>
+
+<div id="system-groups"></div>
+
+<!-- Donation footer -->
+<div class="donation-footer">
+  <div class="donation-text">
+    <h3>Find this helpful?</h3>
+    <p>This site is free for the whole cohort. If it helped you study, a small tip goes a long way toward keeping it updated for future exams.</p>
+  </div>
+  <div class="donation-actions">
+    <a href="venmo://paycharge?txn=pay&recipients=Tom_Thomas&note=Nursing%20Finals%20Hub" class="donate-btn venmo">Venmo @Tom_Thomas</a>
+    <button class="donate-btn zelle" onclick="copyZelle(this)">Zelle (914) 646-0456</button>
+    <div class="zelle-copied" id="zelle-copied">Copied!</div>
+  </div>
+</div>
+
+<div class="footer-bottom">
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background: var(--pass);"></span>>=85% Pass</div>
+    <div class="legend-item"><span class="legend-swatch" style="background: var(--partial);"></span>70-84% Borderline</div>
+    <div class="legend-item"><span class="legend-swatch" style="background: var(--fail);"></span>&lt;70% Fail</div>
+  </div>
+  <button class="reset-btn" onclick="resetAllScores()">Reset all scores</button>
+</div>
+
+</div>
+
+<script>
+const topics = [
+  { ch: '23', name: 'Coronary Vascular', desc: 'Angina, MI/ACS, nitroglycerin', weight: 5, kcQ: 25, ddQ: 25, key: 'coronary', system: 'cardio', kcFile: 'ch23_coronary_kc.html', ddFile: 'ch23_coronary_dd.html', kcReady: true, ddReady: true },
+  { ch: '24', name: 'Structural/Infectious Cardiac', desc: 'Endocarditis, rheumatic fever, aortic stenosis', weight: 3, kcQ: 15, ddQ: 15, key: 'structuralcardiac', system: 'cardio', kcFile: 'ch24_structuralcardiac_kc.html', ddFile: 'ch24_structuralcardiac_dd.html', kcReady: true, ddReady: true },
+  { ch: '25', name: 'Heart Failure', desc: 'L vs R sided, pulmonary edema, fluid excess', weight: 4, kcQ: 25, ddQ: 25, key: 'heartfailure', system: 'cardio', kcFile: 'ch25_heartfailure_kc.html', ddFile: 'ch25_heartfailure_dd.html', kcReady: true, ddReady: true },
+  { ch: '26', name: 'Vascular Disorders', desc: 'Raynaud, PE, DVT, venous vs arterial', weight: 5, kcQ: 25, ddQ: 25, key: 'vascular', system: 'cardio', kcFile: 'ch26_vascular_kc.html', ddFile: 'ch26_vascular_dd.html', kcReady: true, ddReady: true },
+  { ch: '27', name: 'Hypertension', desc: 'Long-term complications, DASH diet', weight: 3, kcQ: 20, ddQ: 20, key: 'hypertension', system: 'cardio', kcFile: 'ch27_hypertension_kc.html', ddFile: 'ch27_hypertension_dd.html', kcReady: true, ddReady: true },
+  { ch: '18', name: 'Upper Respiratory', desc: 'Acute vs chronic bronchitis', weight: 2, kcQ: 15, ddQ: 15, key: 'upperresp', system: 'pulm', kcFile: 'ch18_upperresp_kc.html', ddFile: 'ch18_upperresp_dd.html', kcReady: true, ddReady: true },
+  { ch: '20', name: 'Chronic Pulmonary', desc: 'Emphysema, asthma, sleep apnea, O2 delivery', weight: 6, kcQ: 25, ddQ: 25, key: 'chronicpulm', system: 'pulm', kcFile: 'ch20_chronicpulm_kc.html', ddFile: 'ch20_chronicpulm_dd.html', kcReady: true, ddReady: true },
+  { ch: '29', name: 'Nonmalignant Hematologic', desc: 'Thrombocytopenia, leukopenia, anemias, sickle cell', weight: 5, kcQ: 25, ddQ: 25, key: 'nonmalighem', system: 'hem', kcFile: 'ch29_nonmalighem_kc.html', ddFile: 'ch29_nonmalighem_dd.html', kcReady: true, ddReady: true },
+  { ch: '30', name: 'Hematologic Disorders', desc: 'Polycythemia vera, leukemias (AML/CML/ALL/CLL)', weight: 3, kcQ: 25, ddQ: 25, key: 'hematdisorders', system: 'hem', kcFile: 'ch30_hematdisorders_kc.html', ddFile: 'ch30_hematdisorders_dd.html', kcReady: true, ddReady: true },
+  { ch: '12', name: 'Oncology', desc: 'Chemo, neutropenia, radiation, CBC monitoring', weight: 6, kcQ: 25, ddQ: 25, key: 'oncology', system: 'oncoimmune', kcFile: 'ch12_oncology_kc.html', ddFile: 'ch12_oncology_dd.html', kcReady: true, ddReady: true },
+  { ch: '32', name: 'Immune Deficiency', desc: 'HIV/AIDS stages, opportunistic infections, HAART', weight: 4, kcQ: 20, ddQ: 20, key: 'immune', system: 'oncoimmune', kcFile: 'ch32_immune_kc.html', ddFile: 'ch32_immune_dd.html', kcReady: true, ddReady: true },
+  { ch: '33', name: 'Allergic Disorders', desc: 'Atopic dermatitis, anaphylaxis, allergic rhinitis', weight: 3, kcQ: 20, ddQ: 15, key: 'allergic', system: 'oncoimmune', kcFile: 'ch33_allergic_kc.html', ddFile: 'ch33_allergic_dd.html', kcReady: true, ddReady: true },
+  { ch: '34', name: 'Rheumatic Disorders', desc: 'RA and SLE -- patho, pharm, education', weight: 2, kcQ: 12, ddQ: 12, key: 'rheumatic', system: 'oncoimmune', kcFile: 'ch34_rheumatic_kc.html', ddFile: 'ch34_rheumatic_dd.html', kcReady: true, ddReady: true },
+  { ch: '15', name: 'Intraoperative', desc: 'OR roles, zones, infection, MH', weight: 1, kcQ: 25, ddQ: 25, key: 'intraoperative', system: 'periop', kcFile: 'ch15_intraoperative_kc.html', ddFile: 'ch15_intraoperative_dd.html', kcReady: true, ddReady: true },
+  { ch: '16', name: 'Postoperative', desc: 'System complications, wound care, evisceration', weight: 4, kcQ: 25, ddQ: 25, key: 'postoperative', system: 'periop', kcFile: 'ch16_postoperative_kc.html', ddFile: 'ch16_postoperative_dd.html', kcReady: true, ddReady: true },
+  { ch: '37', name: 'Musculoskeletal Trauma', desc: "Fractures, 6 P's, cast care, compartment syndrome", weight: 3, kcQ: 15, ddQ: 15, key: 'mskTrauma', system: 'msk', kcFile: 'ch37_msktrauma_kc.html', ddFile: 'ch37_msktrauma_dd.html', kcReady: true, ddReady: true },
+  { ch: '39', name: 'Oral & Esophageal', desc: 'GERD, parenteral nutrition / TPN', weight: 2, kcQ: 12, ddQ: 12, key: 'oralesoph', system: 'gi', kcFile: 'ch39_oralesoph_kc.html', ddFile: 'ch39_oralesoph_dd.html', kcReady: true, ddReady: true },
+  { ch: '40', name: 'Gastric & Duodenal', desc: 'Gastritis, peptic ulcer disease, perforation', weight: 2, kcQ: 12, ddQ: 12, key: 'gastric', system: 'gi', kcFile: 'ch40_gastric_kc.html', ddFile: 'ch40_gastric_dd.html', kcReady: true, ddReady: true },
+  { ch: '41', name: 'Intestinal & Rectal', desc: "Crohn's, ulcerative colitis, constipation", weight: 3, kcQ: 15, ddQ: 15, key: 'intestinal', system: 'gi', kcFile: 'ch41_intestinal_kc.html', ddFile: 'ch41_intestinal_dd.html', kcReady: true, ddReady: true },
+  { ch: '46u', name: 'Urinary Disorders', desc: 'UTI, cystitis, renal calculi, pyelonephritis', weight: 4, kcQ: 20, ddQ: 20, key: 'urinary', system: 'renalendo', kcFile: 'ch46u_urinary_kc.html', ddFile: 'ch46u_urinary_dd.html', kcReady: true, ddReady: true },
+  { ch: '46d', name: 'Diabetes', desc: 'DKA vs HHS, hypoglycemia, complications', weight: 5, kcQ: 25, ddQ: 25, key: 'diabetes', system: 'renalendo', kcFile: 'ch46d_diabetes_kc.html', ddFile: 'ch46d_diabetes_dd.html', kcReady: true, ddReady: true }
+];
+
+const systems = [
+  { id: 'cardio',     name: 'Cardiovascular',     shortLabel: 'CV',   color: '#dc2626', bg: '#fef2f2' },
+  { id: 'pulm',       name: 'Pulmonary',           shortLabel: 'PULM', color: '#0891b2', bg: '#ecfeff' },
+  { id: 'hem',        name: 'Hematologic',         shortLabel: 'HEM',  color: '#7c2d12', bg: '#fef3c7' },
+  { id: 'oncoimmune', name: 'Oncology & Immune',   shortLabel: 'ONCO', color: '#7c3aed', bg: '#f5f3ff' },
+  { id: 'periop',     name: 'Perioperative',       shortLabel: 'OR',   color: '#0d9488', bg: '#f0fdfa' },
+  { id: 'msk',        name: 'Musculoskeletal',     shortLabel: 'MSK',  color: '#ca8a04', bg: '#fefce8' },
+  { id: 'gi',         name: 'Gastrointestinal',    shortLabel: 'GI',   color: '#16a34a', bg: '#f0fdf4' },
+  { id: 'renalendo',  name: 'Renal & Endocrine',   shortLabel: 'RE',   color: '#2563eb', bg: '#eff6ff' }
+];
+
+let currentFilter = 'all';
+let allCollapsed = false;
+
+// ===== HELPERS =====
+function getScore(key, type) {
+  try {
+    const raw = localStorage.getItem(`score_${key}_${type}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function scoreClass(pct) {
+  if (pct >= 85) return 'pass';
+  if (pct >= 70) return 'partial';
+  return 'fail';
+}
+
+// ===== RENDER QUIZ CELL =====
+function renderQuizCell(topic, type) {
+  const isKC = type === 'kc';
+  const ready = isKC ? topic.kcReady : topic.ddReady;
+  const file = isKC ? topic.kcFile : topic.ddFile;
+  const labelText = isKC ? 'Knowledge Check' : 'Deep Drill';
+  const labelClass = isKC ? 'kc' : 'dd';
+  const scoreKey = isKC ? 'knowledge' : 'deepdrill';
+
+  if (!ready) {
+    return `<div class="quiz-cell coming-soon">
+      <span class="quiz-cell-label ${labelClass}">${labelText}</span>
+      <span class="quiz-cell-score soon">Coming soon</span>
+    </div>`;
+  }
+
+  const score = getScore(topic.key, scoreKey);
+  if (!score) {
+    return `<a href="${file}" class="quiz-cell ${labelClass} no-score">
+      <span class="quiz-cell-label ${labelClass}">${labelText}</span>
+      <span class="quiz-cell-score start">Start</span>
+      <div class="score-bar"><div class="score-bar-fill start ${labelClass}"></div></div>
+      <span class="cta-arrow">→</span>
+    </a>`;
+  }
+
+  const cls = scoreClass(score.pct);
+  return `<a href="${file}" class="quiz-cell ${labelClass}">
+    <span class="quiz-cell-label ${labelClass}">${labelText}</span>
+    <span class="quiz-cell-score ${cls}">${score.pct.toFixed(0)}</span>
+    <div class="score-bar"><div class="score-bar-fill ${cls}" style="width: ${score.pct}%;"></div></div>
+    <span class="cta-arrow">→</span>
+  </a>`;
+}
+
+// ===== TOPIC ROW =====
+function renderTopicRow(topic) {
+  return `<div class="topic-row" data-topic-key="${topic.key}" data-weight="${topic.weight}">
+    <span class="topic-ch">Ch ${topic.ch}</span>
+    <div class="topic-info">
+      <div class="topic-name">${topic.name}</div>
+      <div class="topic-desc">${topic.desc}</div>
+    </div>
+    ${renderQuizCell(topic, 'kc')}
+    ${renderQuizCell(topic, 'dd')}
+  </div>`;
+}
+
+// ===== SYSTEM GROUP =====
+function renderSystemGroup(sys) {
+  const sysTopics = topics.filter(t => t.system === sys.id);
+  if (sysTopics.length === 0) return '';
+  const totalQuizzes = sysTopics.reduce((sum, t) => sum + (t.kcReady ? 1 : 0) + (t.ddReady ? 1 : 0), 0);
+  const attemptedCount = sysTopics.reduce((sum, t) => {
+    let c = 0;
+    if (t.kcReady && getScore(t.key, 'knowledge')) c++;
+    if (t.ddReady && getScore(t.key, 'deepdrill')) c++;
+    return sum + c;
+  }, 0);
+  const totalWeight = sysTopics.reduce((sum, t) => sum + t.weight, 0);
+  const progressPct = totalQuizzes > 0 ? (attemptedCount / totalQuizzes) * 100 : 0;
+
+  return `<div class="system-group" data-system="${sys.id}">
+    <div class="system-header" onclick="toggleGroup('${sys.id}')">
+      <div class="system-icon" style="background: ${sys.bg}; color: ${sys.color};">${sys.shortLabel}</div>
+      <div class="system-name">${sys.name}</div>
+      <span class="system-meta">${sysTopics.length} ch · ${totalWeight} Q</span>
+      <div class="system-progress-bar"><div class="system-progress-fill" style="width: ${progressPct}%;"></div></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="system-body">
+      ${sysTopics.map(renderTopicRow).join('')}
+    </div>
+  </div>`;
+}
+
+function renderAll() {
+  document.getElementById('system-groups').innerHTML = systems.map(renderSystemGroup).join('');
+}
+
+function toggleGroup(sysId) {
+  document.querySelector(`.system-group[data-system="${sysId}"]`).classList.toggle('collapsed');
+}
+
+function toggleAllGroups() {
+  const groups = document.querySelectorAll('.system-group');
+  allCollapsed = !allCollapsed;
+  groups.forEach(g => g.classList.toggle('collapsed', allCollapsed));
+  document.getElementById('expand-toggle').textContent = allCollapsed ? 'Expand all' : 'Collapse all';
+}
+
+// ===== FILTERING =====
+function applyFilter(btn, filter) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = filter;
+
+  document.querySelectorAll('.topic-row').forEach(row => {
+    const topic = topics.find(t => t.key === row.dataset.topicKey);
+    const kc = getScore(topic.key, 'knowledge');
+    const dd = getScore(topic.key, 'deepdrill');
+    let show = true;
+    if (filter === 'untouched') show = !(topic.kcReady && kc) || !(topic.ddReady && dd);
+    else if (filter === 'weak') show = [kc, dd].filter(s => s).some(s => s.pct < 77);
+    else if (filter === 'strong') { const scores = [kc, dd].filter(s => s).map(s => s.pct); show = scores.length > 0 && scores.every(s => s >= 85); }
+    else if (filter === 'highweight') show = topic.weight >= 4;
+    row.style.display = show ? '' : 'none';
+  });
+
+  document.querySelectorAll('.system-group').forEach(group => {
+    const visible = group.querySelectorAll('.topic-row:not([style*="display: none"])');
+    group.style.display = visible.length === 0 ? 'none' : '';
+  });
+}
+
+// ===== CONTINUE STUDYING =====
+function buildContinueList() {
+  const scored = [];
+  topics.forEach(t => {
+    if (!t.kcReady && !t.ddReady) return;
+    const kc = getScore(t.key, 'knowledge');
+    const dd = getScore(t.key, 'deepdrill');
+    const kcAttempted = t.kcReady && kc;
+    const ddAttempted = t.ddReady && dd;
+    const allAttempted = (!t.kcReady || kcAttempted) && (!t.ddReady || ddAttempted);
+    let priority, status, link;
+
+    if (!allAttempted) {
+      priority = 1000 + (t.weight || 1);
+      if (!kcAttempted && t.kcReady) { status = 'Not started'; link = t.kcFile; }
+      else if (!ddAttempted && t.ddReady) { status = 'KC done -- try DD'; link = t.ddFile; }
+    } else {
+      const lowestPct = Math.min(kc ? kc.pct : 100, dd ? dd.pct : 100);
+      if (lowestPct >= 85) return;
+      priority = 100 - lowestPct + (t.weight || 1);
+      status = `Lowest: ${lowestPct.toFixed(0)}% -- review`;
+      link = (kc && (!dd || kc.pct < dd.pct)) ? t.kcFile : t.ddFile;
+    }
+    scored.push({ topic: t, priority, status, link });
+  });
+
+  scored.sort((a, b) => b.priority - a.priority);
+  const top3 = scored.slice(0, 3);
+
+  if (top3.length === 0) { document.getElementById('continue-section').style.display = 'none'; return; }
+  document.getElementById('continue-section').style.display = '';
+  document.getElementById('continue-list').innerHTML = top3.map(item =>
+    `<a href="${item.link}" class="continue-item">
+      <div class="continue-item-name">Ch ${item.topic.ch} · ${item.topic.name}</div>
+      <div class="continue-item-meta">
+        <span class="continue-item-status">${item.status}</span>
+        <span class="continue-item-weight">${item.topic.weight} Q</span>
+      </div>
+    </a>`
+  ).join('');
+}
+
+// ===== DASHBOARD =====
+function updateDashboard() {
+  let totalAvailable = 0, attemptedCount = 0, passingCount = 0, scoreSum = 0, scoreCount = 0, bankSize = 0;
+
+  topics.forEach(t => {
+    if (t.kcReady) {
+      totalAvailable++; bankSize += t.kcQ;
+      const kc = getScore(t.key, 'knowledge');
+      if (kc) { attemptedCount++; scoreSum += kc.pct; scoreCount++; if (kc.pct >= 77) passingCount++; }
+    }
+    if (t.ddReady) {
+      totalAvailable++; bankSize += t.ddQ;
+      const dd = getScore(t.key, 'deepdrill');
+      if (dd) { attemptedCount++; scoreSum += dd.pct; scoreCount++; if (dd.pct >= 77) passingCount++; }
+    }
+  });
+
+  const attemptedPct = totalAvailable > 0 ? (attemptedCount / totalAvailable) * 100 : 0;
+  const avgScore = scoreCount > 0 ? scoreSum / scoreCount : null;
+
+  const circumference = 2 * Math.PI * 50;
+  document.getElementById('progress-ring').style.strokeDashoffset = circumference - (attemptedPct / 100) * circumference;
+  document.getElementById('ring-pct').textContent = `${attemptedPct.toFixed(0)}%`;
+  document.getElementById('stat-attempted').textContent = `${attemptedCount}/${totalAvailable}`;
+  document.getElementById('stat-passing').textContent = passingCount;
+  document.getElementById('stat-bank').textContent = bankSize;
+
+  const avgEl = document.getElementById('stat-avg');
+  if (avgScore !== null) {
+    avgEl.textContent = `${avgScore.toFixed(0)}%`;
+    avgEl.classList.remove('pass', 'partial', 'fail');
+    avgEl.classList.add(scoreClass(avgScore));
+  } else {
+    avgEl.textContent = '--';
+  }
+}
+
+// ===== SIMULATOR =====
+function renderSimulator() {
+  const sim = getScore('medsurg_simulator', 'attempt');
+  const scoreEl = document.getElementById('sim-score');
+  const statusEl = document.getElementById('sim-status');
+  const btnEl = document.getElementById('sim-btn');
+
+  if (sim) {
+    scoreEl.textContent = sim.pct.toFixed(0) + '%';
+    scoreEl.classList.remove('no-attempt');
+    btnEl.textContent = 'Retake Practice Test';
+    if (sim.pct >= 77) {
+      scoreEl.style.color = 'var(--gold)';
+      statusEl.textContent = 'Passing';
+      statusEl.classList.add('pass');
+    } else {
+      scoreEl.style.color = '#fca5a5';
+      statusEl.textContent = 'Below Pass';
+      statusEl.classList.add('fail');
+    }
+  }
+}
+
+// ===== ZELLE COPY =====
+function copyZelle(btn) {
+  navigator.clipboard.writeText('(914) 646-0456').then(() => {
+    const copied = document.getElementById('zelle-copied');
+    copied.style.display = 'block';
+    setTimeout(() => { copied.style.display = 'none'; }, 2000);
+  });
+}
+
+function resetAllScores() {
+  if (!confirm('Reset all scores? This cannot be undone.')) return;
+  Object.keys(localStorage).filter(k => k.startsWith('score_')).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ===== WELCOME MODAL =====
+function closeModal() {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('visible');
+  localStorage.setItem('hub_welcomed', '1');
+}
+
+function initModal() {
+  if (!localStorage.getItem('hub_welcomed')) {
+    setTimeout(() => {
+      document.getElementById('modal-overlay').classList.add('visible');
+    }, 300);
+  }
+}
+
+// Close on backdrop click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===== INIT =====
+renderAll();
+updateDashboard();
+buildContinueList();
+renderSimulator();
+initModal();
+</script>
+</body>
+</html>

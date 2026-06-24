@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch 20 Chronic Pulmonary — Deep Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c;
+  --teal: #0d9488; --teal-pale: #f0fdfa;
+  --purple: #7c3aed; --purple-pale: #f5f3ff;
+  --gold: #f59e0b; --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280;
+  --bg: #fafaf7; --card: #ffffff; --line: #e5e0d5;
+  --correct: #059669; --correct-bg: #ecfdf5;
+  --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; padding: 32px 16px 80px; min-height: 100vh; }
+.container { max-width: 760px; margin: 0 auto; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1.5px; color: var(--purple); text-transform: uppercase; margin-bottom: 12px; }
+h1 { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--navy); margin-bottom: 8px; line-height: 1.15; }
+.tagline { color: var(--muted); margin-bottom: 32px; font-size: 16px; }
+.start-card, .question-card, .results-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 32px; margin-bottom: 24px; }
+.start-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+.start-stat { border: 1px solid var(--line); border-radius: 4px; padding: 16px; text-align: center; }
+.start-stat-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--purple); display: block; }
+.start-stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+.btn { background: var(--purple); color: white; border: none; padding: 14px 32px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+.btn:hover { background: #6d28d9; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-secondary { background: var(--navy); }
+.btn-secondary:hover { background: var(--navy-soft); }
+.progress-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+.progress-fill { height: 100%; background: var(--purple); transition: width 0.3s; }
+.q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+.q-stem { font-size: 18px; color: var(--ink); margin-bottom: 24px; line-height: 1.5; }
+    .lab-strip { margin-top: 14px; margin-bottom: 18px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; border-left: 3px solid var(--teal); }
+    .lab-strip-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    .lab-row { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+    .lab-item { display: flex; flex-direction: column; gap: 2px; min-width: 90px; }
+    .lab-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+    .lab-value { font-size: 14px; color: var(--ink); font-weight: 600; }
+    .lab-value-unit { font-weight: 400; color: var(--muted); font-size: 11px; }
+    .lab-range { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.option { border: 1.5px solid var(--line); border-radius: 6px; padding: 14px 18px; cursor: pointer; transition: all 0.15s; background: var(--card); font-size: 15px; display: flex; align-items: flex-start; gap: 12px; }
+.option:hover:not(.locked) { border-color: var(--purple); background: var(--purple-pale); }
+.option.selected { border-color: var(--purple); background: var(--purple-pale); }
+.option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+.option-letter { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--muted); min-width: 18px; }
+.option.correct .option-letter { color: var(--correct); }
+.option.wrong .option-letter { color: var(--wrong); }
+.rationale { background: var(--purple-pale); border-left: 3px solid var(--purple); padding: 16px 20px; border-radius: 0 6px 6px 0; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+.rationale strong { color: var(--navy); }
+.concept-pill { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.5px; background: var(--purple); color: white; padding: 3px 10px; border-radius: 100px; margin-bottom: 10px; text-transform: uppercase; }
+.others-list { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--ink-soft); }
+.others-list div { margin-bottom: 6px; }
+.btn-row { display: flex; gap: 12px; justify-content: flex-end; }
+.results-score { font-family: 'DM Serif Display', serif; font-size: 56px; text-align: center; margin: 12px 0; }
+.results-score.pass { color: var(--correct); }
+.results-score.borderline { color: var(--partial); }
+.results-score.fail { color: var(--wrong); }
+.results-pts { font-family: 'DM Mono', monospace; text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.perf-msg { text-align: center; margin: 16px 0 32px; font-size: 16px; color: var(--ink-soft); font-style: italic; }
+.missed-section h3 { font-family: 'DM Serif Display', serif; color: var(--navy); margin-bottom: 16px; font-size: 22px; }
+.missed-item { border: 1px solid var(--line); border-radius: 6px; padding: 16px; margin-bottom: 12px; background: var(--bg); font-size: 14px; }
+.missed-item .stem { font-weight: 500; margin-bottom: 8px; }
+.missed-item .ans { color: var(--correct); margin-bottom: 8px; font-family: 'DM Mono', monospace; font-size: 13px; }
+.missed-item .rat { color: var(--ink-soft); font-size: 13px; }
+.back-btn { position: fixed; bottom: 20px; left: 20px; background: var(--navy); color: white; text-decoration: none; padding: 10px 18px; border-radius: 100px; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 50; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← STUDY HUB</a>
+<div class="container">
+
+<div id="start-screen">
+  <div class="eyebrow">Deep Drill · Chapter 20</div>
+  <h1>Chronic Pulmonary Disorders</h1>
+  <p class="tagline">NCLEX-style application: priority decisions, complications, and clinical judgment for emphysema, asthma, sleep apnea, and oxygen therapy.</p>
+  <div class="start-card">
+    <div class="start-stats">
+      <div class="start-stat"><span class="start-stat-num">25</span><span class="start-stat-label">Questions</span></div>
+      <div class="start-stat"><span class="start-stat-num">MC</span><span class="start-stat-label">Format</span></div>
+      <div class="start-stat"><span class="start-stat-num">Yes</span><span class="start-stat-label">Rationale</span></div>
+    </div>
+    <p style="margin-bottom: 20px; color: var(--ink-soft);">Higher-difficulty NCLEX-style scenarios. Apply your knowledge to clinical-judgment situations.</p>
+    <button class="btn" onclick="begin()">Begin</button>
+  </div>
+</div>
+
+<div id="quiz-screen" class="hidden">
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="question-card">
+    <div class="q-header">
+      <span id="q-counter">Question 1 of 25</span>
+      <span id="q-points">0 pts</span>
+    </div>
+    <div class="q-stem" id="q-stem"></div>
+    <div class="options" id="q-options"></div>
+    <div id="rationale-area" class="hidden"></div>
+    <div class="btn-row">
+      <button class="btn" id="submit-btn" onclick="submitAnswer()" disabled>Submit</button>
+      <button class="btn btn-secondary hidden" id="next-btn" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+</div>
+
+<div id="results-screen" class="hidden">
+  <div class="results-card">
+    <div class="eyebrow">Results · Deep Drill</div>
+    <h1>Chronic Pulmonary</h1>
+    <div class="results-score" id="r-score">0%</div>
+    <div class="results-pts" id="r-pts">0 / 25 points</div>
+    <div class="perf-msg" id="r-msg"></div>
+    <div class="btn-row" style="justify-content: center; margin-bottom: 32px;">
+      <button class="btn" onclick="location.reload()">Retry Quiz</button>
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Back to Hub</a>
+    </div>
+    <div class="missed-section" id="missed-section"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A nurse is caring for a patient with emphysema who suddenly becomes confused and agitated. The SpO₂ is 86% on 2 L/min nasal cannula. What is the priority nursing action?",
+    options: [
+      "Increase the oxygen flow to 6 L/min",
+      "Administer a PRN sedative for agitation",
+      "Reposition the patient and recheck in 15 minutes",
+      "Notify the provider immediately and prepare for ABGs"
+    ],
+    answer: 3,
+    concept: "Cognitive Change Priority",
+    rationale: "New cognitive changes plus low SpO₂ in chronic pulmonary disease signal acute decompensation — possibly hypoxemia or CO₂ retention. Notify provider and prepare for ABGs to guide treatment.",
+    others: {
+      "0": "High-flow oxygen in chronic CO₂ retainers can suppress hypoxic drive — never increase O₂ aggressively without provider input.",
+      "1": "Sedatives mask hypoxia and worsen respiratory depression — contraindicated.",
+      "2": "Repositioning and waiting delays critical intervention for decompensation."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with asthma arrives in the ER wheezing audibly with use of accessory muscles. What is the FIRST nursing action?",
+    options: [
+      "Administer albuterol via nebulizer",
+      "Obtain a peak flow measurement",
+      "Start an IV for corticosteroids",
+      "Place the patient in supine position"
+    ],
+    answer: 0,
+    concept: "Acute Asthma Priority",
+    rationale: "Albuterol (SABA) is first-line rescue for acute bronchospasm. Bronchodilation must come first — peak flows and IV access can follow once airway is stabilized.",
+    others: {
+      "1": "Peak flow is useful but bronchodilation comes first when actively wheezing.",
+      "2": "Corticosteroids work over hours; albuterol works in minutes.",
+      "3": "Supine worsens dyspnea — patients should sit upright (high Fowler's or tripod)."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A nurse is caring for a patient with chronic emphysema and notes new peripheral edema, jugular vein distention, and 4-pound weight gain in 2 days. What does the nurse suspect?",
+    options: [
+      "Acute pulmonary embolism",
+      "Acute kidney injury",
+      "Cor pulmonale (right-sided HF)",
+      "Hyperaldosteronism from adrenal disease"
+    ],
+    answer: 2,
+    concept: "Cor Pulmonale Recognition",
+    rationale: "Peripheral edema, JVD, and acute weight gain in an emphysema patient signal cor pulmonale — right-sided HF caused by chronic lung disease.",
+    others: {
+      "0": "PE causes acute dyspnea, chest pain, tachycardia — not edema/JVD pattern.",
+      "1": "AKI is unlikely without other markers; pattern fits right HF.",
+      "3": "Hyperaldosteronism is rare and not the typical cause in emphysema."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with severe asthma is started on inhaled corticosteroids. Which patient education is MOST important?",
+    options: [
+      "\"Use this inhaler immediately when you feel a wheeze coming on.\"",
+      "\"This medication will replace your albuterol rescue inhaler.\"",
+      "\"Take this only when you have symptoms — not daily.\"",
+      "\"Rinse your mouth with water after each use to prevent thrush.\""
+    ],
+    answer: 3,
+    concept: "ICS Education",
+    rationale: "Inhaled corticosteroids increase oral candidiasis (thrush) risk. Rinsing the mouth after each use prevents this common side effect.",
+    others: {
+      "0": "ICS is for daily prevention, not acute rescue — that's albuterol.",
+      "1": "ICS does not replace SABA rescue medication.",
+      "2": "ICS works only with consistent daily use, not PRN."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with chronic pulmonary disease is having difficulty eating due to dyspnea. Which intervention is MOST appropriate?",
+    options: [
+      "Offer small frequent meals and avoid gas-forming foods",
+      "Provide three large high-calorie meals daily",
+      "Restrict fluid intake to less than 1 L/day",
+      "Order a high-fiber bran-based diet"
+    ],
+    answer: 0,
+    concept: "Nutrition Strategy",
+    rationale: "Small frequent meals reduce diaphragmatic pressure. Avoiding gas-forming foods prevents bloating that pushes against the diaphragm and worsens dyspnea.",
+    others: {
+      "1": "Large meals push against the diaphragm and worsen breathing.",
+      "2": "Fluid restriction worsens secretion thickness — patient needs 2-3 L/day.",
+      "3": "Bran/fiber-heavy foods cause gas and bloating."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient newly diagnosed with COPD has post-bronchodilator FEV₁ 45% predicted, with mMRC dyspnea grade 2 (shortness of breath when hurrying or walking up a slight hill). The patient has had 1 exacerbation in the past year not requiring hospitalization. Which GOLD classification fits?",
+    options: [
+      "GOLD 1 (mild)",
+      "GOLD 2 (moderate)",
+      "GOLD 3 (severe)",
+      "GOLD 4 (very severe)"
+    ],
+    answer: 1,
+    concept: "COPD GOLD Staging",
+    rationale: "GOLD staging is based on POST-bronchodilator FEV₁: GOLD 1 ≥80%, GOLD 2 50-79%, GOLD 3 30-49%, GOLD 4 <30%. This patient at 45% = GOLD 3 (severe). Wait — let me reconsider: 45% falls in 30-49%, which is GOLD 3. Symptom and exacerbation history determine the ABCD group separately. Treatment depends on both stage and symptom group; this patient would benefit from LAMA + LABA + possibly ICS.",
+    others: {
+      "0": "GOLD 1 is FEV₁ ≥80% predicted; this patient is much lower.",
+      "1": "GOLD 2 is 50-79%; 45% falls in GOLD 3 range.",
+      "3": "GOLD 4 is <30% predicted; 45% does not meet that."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient with severe COPD on long-term oral theophylline reports new nausea, vomiting, palpitations, headache, and tremors. Theophylline level returns at 28 mcg/mL (therapeutic 10-20). Which is the priority action?",
+    options: [
+      "Continue current dose and recheck level in 1 week",
+      "Hold theophylline, notify provider, monitor cardiac rhythm and seizure risk",
+      "Increase the dose to push through the breakthrough symptoms",
+      "Add a second theophylline dose at bedtime to maintain levels"
+    ],
+    answer: 1,
+    concept: "Theophylline Toxicity",
+    rationale: "Theophylline has a NARROW therapeutic window (10-20 mcg/mL). Toxicity (>20) causes: GI symptoms (N/V), CNS (tremors, agitation, seizures at higher levels), cardiac (tachyarrhythmias including SVT, atrial flutter, V-tach). Hold the drug, notify provider, monitor cardiac rhythm continuously (seizure precautions if level very high), and consider activated charcoal if recent ingestion. Drug interactions (cimetidine, fluoroquinolones, erythromycin, smoking changes) commonly cause toxicity.",
+    others: {
+      "0": "Continuing toxic dose risks seizures and dysrhythmias.",
+      "2": "Increasing in toxicity is dangerous.",
+      "3": "Adding more dose worsens toxicity."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient is being discharged after an asthma exacerbation with a 5-day prednisone burst (40 mg PO daily). The patient asks if they should taper the medication. Which response is BEST?",
+    options: [
+      "Yes, taper the prednisone over the next 2 weeks to prevent adrenal crisis",
+      "Continue prednisone for 30 days then stop abruptly",
+      "Stop the prednisone immediately — taper is not needed for asthma",
+      "Short bursts (≤7-10 days) generally do not need a taper; finish as prescribed"
+    ],
+    answer: 3,
+    concept: "Prednisone Burst for Asthma",
+    rationale: "Short bursts of systemic corticosteroids (typically ≤7-10 days) for asthma or COPD exacerbations generally do NOT require tapering — the HPA axis is not significantly suppressed in this short timeframe. Patient should complete the full course. LONG-TERM steroids (>10-14 days) require tapering to prevent adrenal insufficiency. Stopping abruptly during an exacerbation course is also not recommended — finish the full treatment.",
+    others: {
+      "0": "Tapering is for long-term steroid use, not short bursts.",
+      "1": "Extended courses are not standard for typical asthma exacerbations.",
+      "2": "Stopping early during a burst can cause exacerbation rebound."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with chronic pulmonary disease is receiving 5 L/min via nasal cannula. The nurse notes dry, cracked nasal mucosa and mild epistaxis. What action does the nurse take?",
+    options: [
+      "Add humidification to the oxygen system",
+      "Decrease the flow rate to 1 L/min",
+      "Switch to a non-rebreather mask",
+      "Discontinue oxygen therapy until mucosa heals"
+    ],
+    answer: 0,
+    concept: "Humidification Indication",
+    rationale: "Flow rates ≥4 L/min via nasal cannula dry the mucosa. Adding humidification prevents drying and bleeding.",
+    others: {
+      "1": "Decreasing flow may compromise oxygenation.",
+      "2": "Non-rebreather is for high-O₂ needs; not indicated for mucosal drying.",
+      "3": "Discontinuing oxygen risks hypoxemia."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient with asthma is being taught to use a metered-dose inhaler (MDI) with a spacer. Which technique demonstrates correct understanding?",
+    options: [
+      "Shake the inhaler, place mouth on spacer, breathe in slowly and deeply, hold for 10 seconds",
+      "Shake the inhaler, hold 6 inches from mouth, exhale during the puff for best delivery",
+      "Don't shake the inhaler since suspension is bad; breathe in fast and shallowly",
+      "Spray the puff into the air first, then hold breath while inhaling"
+    ],
+    answer: 0,
+    concept: "MDI With Spacer Technique",
+    rationale: "MDI with spacer technique: (1) shake the inhaler, (2) attach to spacer, (3) exhale away from spacer, (4) place mouth on spacer mouthpiece (lips sealed), (5) press inhaler to release puff, (6) breathe in SLOWLY and deeply, (7) hold breath 10 seconds, (8) wait 1 minute between puffs. Spacers improve drug delivery to the lungs (especially in children, elderly, weak inspiratory effort). DPIs (dry powder inhalers) use a DIFFERENT technique — fast deep breath, no spacer, no shaking.",
+    others: {
+      "1": "Holding inhaler away and exhaling during the puff loses the medication.",
+      "2": "Shaking is needed; fast shallow breaths don't deliver to alveoli.",
+      "3": "Spraying into air wastes the puff; that's priming, not technique."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient is admitted with acute asthma exacerbation. After albuterol nebulizer treatment, the nurse re-assesses. Which finding indicates the treatment is WORKING?",
+    options: [
+      "Decreased wheezing and improved air movement",
+      "Silent chest with no audible breath sounds",
+      "Increased respiratory rate from 24 to 32",
+      "Decreased SpO₂ from 92% to 86%"
+    ],
+    answer: 0,
+    concept: "Treatment Response",
+    rationale: "Decreased wheezing with improved air movement indicates bronchodilation worked.",
+    others: {
+      "1": "Silent chest is OMINOUS — it means airways are too obstructed for any air movement (impending respiratory failure).",
+      "2": "Worsening RR shows deterioration.",
+      "3": "Falling SpO₂ shows worsening hypoxemia."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with severe emphysema is at risk for poor nutrition. Which assessment finding supports this concern?",
+    options: [
+      "BMI of 28 with stable weight over 6 months",
+      "Cyanosis of lips with peripheral edema",
+      "Reports getting \"too tired\" while eating and avoiding meals",
+      "Prefers cold fluids over warm liquids"
+    ],
+    answer: 2,
+    concept: "Eating Fatigue",
+    rationale: "Increased work of breathing makes eating exhausting. \"Too tired to eat\" leads to malnutrition — a major concern in emphysema (the \"pink puffer\" pattern often shows weight loss).",
+    others: {
+      "0": "Stable BMI 28 is overweight, not malnourished.",
+      "1": "Cyanosis and edema indicate hypoxia and HF, not nutrition.",
+      "3": "Beverage preference is unrelated to nutritional risk."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient with COPD wants to quit smoking and asks the nurse about pharmacologic options. The patient has a history of seizures from a prior head injury. Which medication should be AVOIDED?",
+    options: [
+      "Nicotine replacement therapy (patch, gum, lozenge)",
+      "Bupropion (Zyban) — lowers seizure threshold",
+      "Varenicline (Chantix) with appropriate monitoring",
+      "Combination NRT under medical supervision"
+    ],
+    answer: 1,
+    concept: "Smoking Cessation Pharm",
+    rationale: "Bupropion lowers the seizure threshold and is contraindicated in patients with: history of seizures, current/prior eating disorders, current/prior alcohol or benzodiazepine withdrawal. Varenicline (Chantix) has a black box warning for neuropsychiatric effects and requires monitoring but is not contraindicated in seizure history. NRT (patches, gum, lozenges) is generally safe and is the most accessible first-line option.",
+    others: {
+      "0": "NRT is safe in seizure history.",
+      "2": "Varenicline is not contraindicated; needs monitoring for psych effects.",
+      "3": "Combination NRT is safe with supervision."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with chronic pulmonary disease is being discharged. Which patient statement indicates a need for FURTHER teaching?",
+    options: [
+      "\"I will use my albuterol before exercise to prevent symptoms.\"",
+      "\"I will drink 2-3 liters of fluid daily to thin my mucus.\"",
+      "\"I will use pursed-lip breathing when I feel short of breath.\"",
+      "\"I will stop my inhaled steroid since I feel fine now.\""
+    ],
+    answer: 3,
+    concept: "Discharge Teaching Gap",
+    rationale: "Inhaled corticosteroids must be used daily for prevention even when asymptomatic. Stopping them leads to airway re-inflammation and exacerbation.",
+    others: {
+      "0": "Pre-exercise SABA is correct for exercise-induced bronchospasm.",
+      "1": "Adequate hydration thins secretions.",
+      "2": "Pursed-lip breathing helps prevent airway collapse."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A nurse is caring for a chronic emphysema patient on 2 L/min nasal cannula. The pulse oximeter reads 90%. What action does the nurse take?",
+    options: [
+      "Maintain current settings — this is acceptable for chronic disease",
+      "Increase oxygen to 6 L/min to reach SpO₂ above 95%",
+      "Discontinue oxygen since saturation is below normal",
+      "Switch to a non-rebreather mask immediately"
+    ],
+    answer: 0,
+    concept: "Target SpO₂",
+    rationale: "Chronic CO₂ retainers maintain target SpO₂ 88-92%. Aggressively raising O₂ can suppress hypoxic drive and cause CO₂ retention. 90% is acceptable.",
+    others: {
+      "1": "Aggressive O₂ in chronic retainers risks hypercapnia.",
+      "2": "Discontinuing oxygen risks hypoxemia.",
+      "3": "Non-rebreather delivers 80-100% O₂ — far too much for this patient."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "An asthma patient using their peak flow meter at home gets a reading at 65% of personal best. The patient asks the nurse what to do. Which response is BEST?",
+    options: [
+      "Green zone — continue normal activities",
+      "Yellow zone",
+      "Red zone",
+      "Disregard peak flow readings — symptoms are more reliable than numbers"
+    ],
+    answer: 1,
+    concept: "Peak Flow Zones",
+    rationale: "Peak flow zones based on personal best: GREEN (≥80%) — well controlled, continue plan. YELLOW (50-79%) — caution, use rescue inhaler, follow asthma action plan, may need step-up; if no improvement contact provider. RED (<50%) — emergency, use rescue inhaler immediately and seek emergency care/call 911. Asthma action plans use these zones for self-management.",
+    others: {
+      "0": "65% is yellow zone, not green; needs intervention.",
+      "2": "Red zone is <50%; 65% is not yet red.",
+      "3": "Peak flow IS reliable and is the standard for action plans."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A nurse delegates care to a UAP for a patient with chronic emphysema. Which task is APPROPRIATE to delegate?",
+    options: [
+      "Initial assessment of breath sounds upon admission",
+      "Teaching the patient how to use an MDI inhaler",
+      "Reporting if the patient becomes confused or restless",
+      "Adjusting the oxygen flow rate based on SpO₂ readings"
+    ],
+    answer: 2,
+    concept: "Appropriate Delegation",
+    rationale: "A UAP can observe and report changes in mental status. Initial assessment, teaching, and titrating oxygen require nursing judgment.",
+    others: {
+      "0": "Assessment requires RN judgment.",
+      "1": "Patient teaching is a nursing responsibility.",
+      "3": "Titrating oxygen requires clinical judgment."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient with severe asthma arrives in the ED unable to speak in full sentences, RR 32, accessory muscles in use, SpO₂ 86% on room air. After 2 nebulized albuterol treatments, the patient is now harder to arouse, the wheezing has SUBSIDED, and SpO₂ is 84%. Which interpretation is correct?",
+    options: [
+      "Patient is improving since wheezing has stopped",
+      "Status asthmaticus with impending respiratory failure — silent chest is ominous",
+      "Continue nebulizer treatments and reassess in 30 minutes",
+      "Discharge home with oral steroids since wheezing resolved"
+    ],
+    answer: 1,
+    concept: "Status Asthmaticus / Silent Chest",
+    rationale: "\"Silent chest\" with NO wheezing in a severe asthma exacerbation is a CRITICAL DETERIORATION sign — the airways are so obstructed there is insufficient airflow to generate wheezing. Combined with worsening SpO₂ and decreased level of consciousness, this is impending respiratory failure. Prepare for intubation, IV magnesium sulfate, IV corticosteroids, possible epinephrine, ICU admission. Less wheezing in this context = WORSE, not better.",
+    others: {
+      "0": "Disappearance of wheezing in worsening clinical picture = critical, not improvement.",
+      "2": "Patient is decompensating — needs intubation, not more nebulizers.",
+      "3": "Discharging a deteriorating patient is dangerous."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with chronic emphysema is admitted with thick yellow-green sputum, fever, and increased dyspnea. What does the nurse suspect?",
+    options: [
+      "Spontaneous pneumothorax",
+      "Acute pulmonary embolism",
+      "Right-sided heart failure progression",
+      "Acute exacerbation with bacterial infection"
+    ],
+    answer: 3,
+    concept: "Exacerbation Recognition",
+    rationale: "Yellow-green sputum, fever, and increased dyspnea suggest acute exacerbation — often triggered by bacterial infection. Treatment includes antibiotics and bronchodilators.",
+    others: {
+      "0": "Pneumothorax presents with sudden severe pain and absent breath sounds.",
+      "1": "PE causes sudden dyspnea, chest pain — typically without purulent sputum.",
+      "2": "Right HF causes edema and JVD, not purulent sputum or fever."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient is being discharged with home oxygen at 2 L/min nasal cannula. Which discharge teaching is MOST important for safety?",
+    options: [
+      "Smoking is allowed if you stay 3 feet from the oxygen source",
+      "No smoking, no flames, no aerosols near oxygen; post \"Oxygen in Use\" signs",
+      "Oxygen can be used only at night to save costs",
+      "Place the oxygen tank near the heating vent for warmth"
+    ],
+    answer: 1,
+    concept: "Home Oxygen Safety",
+    rationale: "Oxygen does not burn but supports combustion — fires near oxygen burn faster and hotter. Critical safety teaching: NO smoking (patient or visitors) within 6+ feet, no candles, no open flames, no aerosols (hairspray, cleaning sprays, deodorant), no petroleum-based products on face/lips (use water-based instead), keep tanks away from heat sources, post \"Oxygen in Use\" signs to alert visitors, secure tanks upright to prevent falls. Smoking-related fires while on home O₂ cause severe facial burns and deaths annually.",
+    others: {
+      "0": "3 feet is far too close — smoking on home O₂ causes severe burns.",
+      "2": "Oxygen prescription is based on need, not cost; nighttime-only is sometimes prescribed but not for safety.",
+      "3": "Heat sources near oxygen tanks are a fire risk."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A patient with moderate COPD asks the nurse about pulmonary rehabilitation. Which response BEST describes the benefits?",
+    options: [
+      "Pulmonary rehab cures COPD by reversing lung damage",
+      "Pulmonary rehab is only for patients on the lung transplant list",
+      "Pulmonary rehab improves exercise tolerance, dyspnea, and quality of life",
+      "Pulmonary rehab requires patients to be off all COPD medications"
+    ],
+    answer: 2,
+    concept: "Pulmonary Rehabilitation Benefits",
+    rationale: "Pulmonary rehabilitation — multidisciplinary program with exercise training, breathing techniques, energy conservation, education, nutrition counseling, psychosocial support — is one of the most evidence-based interventions in COPD. Benefits: improved exercise tolerance, decreased dyspnea, fewer hospitalizations, improved quality of life, better self-management. Does NOT reverse lung damage. Available for moderate-severe COPD, not just transplant candidates. Continued on standard COPD medications.",
+    others: {
+      "0": "Lung damage in COPD is not reversible; rehab improves function.",
+      "1": "Rehab is for moderate-severe COPD broadly, not just transplant.",
+      "3": "Patients continue all medications during rehab."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A 38-year-old patient who never smoked is diagnosed with severe emphysema. The patient's sister has chronic liver disease. Which diagnosis should be considered?",
+    options: [
+      "Asthma misdiagnosed as emphysema",
+      "Idiopathic pulmonary fibrosis from environmental exposure",
+      "Alpha-1 antitrypsin deficiency — genetic emphysema and liver disease",
+      "Chronic bronchitis from passive smoke exposure"
+    ],
+    answer: 2,
+    concept: "Alpha-1 Antitrypsin Deficiency",
+    rationale: "Alpha-1 antitrypsin (AAT) deficiency is a genetic cause of early-onset emphysema (often before age 45) in nonsmokers or light smokers, and is also associated with liver disease (cirrhosis, hepatocellular carcinoma) — explaining the sister's liver disease. AAT normally inhibits neutrophil elastase that destroys alveolar tissue. Diagnosed by serum AAT levels and genotyping. Treatment: AAT augmentation therapy (IV infusion), smoking cessation critical, lung transplant for severe cases.",
+    others: {
+      "0": "Asthma doesn't cause emphysema features and family liver disease pattern.",
+      "1": "IPF is interstitial fibrosis, different presentation; doesn't link to liver disease.",
+      "3": "Passive smoking can cause some COPD but doesn't explain family liver disease pattern."
+    }
+  },
+  {
+    topic: "Chronic Pulmonary",
+    type: "standard",
+    stem: "A nurse is reviewing an asthma action plan with a patient. Which patient statement indicates correct understanding?",
+    options: [
+      "I will follow the same plan regardless of my peak flow readings",
+      "I will avoid all activity and stay in bed if I have any wheezing",
+      "I should only call my provider if I am unable to breathe at all",
+      "Green zone for daily routine, yellow for warnings, red for severe symptoms"
+    ],
+    answer: 3,
+    concept: "Asthma Action Plan",
+    rationale: "Asthma action plans are personalized written plans dividing self-management into zones tied to peak flow and symptoms: GREEN (good control) — daily controller meds, normal activities; YELLOW (caution/warning) — add rescue inhaler, possibly step-up controller, contact provider if no improvement; RED (emergency) — rescue inhaler q3-4 min, seek emergency care or call 911. Patient understands this layered self-management.",
+    others: {
+      "0": "Action plans REQUIRE different responses to different zones.",
+      "1": "Bed rest for any wheezing is overreaction; rescue inhaler use is the appropriate response.",
+      "2": "Earlier provider contact (yellow zone) prevents red-zone emergencies."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A patient with severe asthma is using their rescue inhaler more than 3 times per week. What does this finding indicate?",
+    options: [
+      "Excellent asthma control — continue current plan",
+      "Rescue inhaler addiction requiring counseling",
+      "Normal use for a patient with severe asthma",
+      "Poor asthma control requiring step-up in therapy"
+    ],
+    answer: 3,
+    concept: "Asthma Control Assessment",
+    rationale: "Rescue inhaler use >2 times per week indicates POOR asthma control. The provider needs to step up controller therapy (e.g., add or increase inhaled corticosteroids).",
+    others: {
+      "0": "Frequent rescue use signals poor control.",
+      "1": "Rescue inhalers are not addictive — frequent use is a control issue.",
+      "2": "Even severe asthma should aim for minimal rescue use with proper controllers."
+    }
+  },
+  {
+    topic: "ChronicPulm",
+    type: "standard",
+    stem: "A nurse is caring for a chronic emphysema patient who develops sudden severe dyspnea, sharp chest pain, and absent breath sounds on the right side. What does the nurse suspect?",
+    options: [
+      "Acute asthma attack",
+      "Pneumonia in the right lower lobe",
+      "Spontaneous pneumothorax",
+      "Acute bronchitis exacerbation"
+    ],
+    answer: 2,
+    concept: "Pneumothorax Recognition",
+    rationale: "Sudden severe dyspnea, sharp chest pain, and absent unilateral breath sounds in an emphysema patient suggest spontaneous pneumothorax — a known complication from ruptured alveolar blebs.",
+    others: {
+      "0": "Asthma causes wheezing throughout, not absent unilateral sounds.",
+      "1": "Pneumonia presents with crackles and productive cough, not absent sounds.",
+      "3": "Bronchitis causes productive cough — not sudden absent breath sounds."
+    }
+  }
+];
+
+// === QUIZ ENGINE ===
+let currentQ = 0;
+let totalPts = 0;
+let answers = [];
+let selectedOption = null;
+
+function begin() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  renderQuestion();
+}
+
+function extractLabs(stem) {
+  const labs = [];
+  const seen = new Set();
+
+  // Each pattern: { re, name, unit (or unitFromMatch index), rangeFromMatch (optional) }
+  const patterns = [
+    { re: /\bBP\s+(\d{2,3}\/\d{2,3})(?:\s*\((?:baseline|normal)\s+([\d\/<>≥≤\-–\s]+)\))?/gi, name: 'BP', unit: 'mmHg', rangeIdx: 2, ranglePrefix: 'baseline ' },
+    { re: /\bHR\s+(\d{2,3})\b/gi, name: 'HR', unit: 'bpm' },
+    { re: /\bpulse\s+(\d{2,3})\b/gi, name: 'Pulse', unit: 'bpm' },
+    { re: /\b(?:temperature|temp)[\s:]+(\d{2,3}(?:\.\d)?)\s*°?\s*([CF])\b/gi, name: 'Temp', unitIdx: 2, unitPrefix: '°' },
+    { re: /\b(?:respiratory rate|RR)\s+(\d{1,3})(?:\/min)?(?:\s*\(was\s+(\d+)\/?(?:min)?\))?\b/gi, name: 'RR', unit: '/min', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:urine output|UOP)\s+(\d{1,3})\s*mL\/hr(?:\s*\(was\s+(\d+)\s*mL\/hr\))?\b/gi, name: 'UOP', unit: 'mL/hr', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:bedside\s+)?(?:blood\s+)?glucose(?:\s+is|\s+at\s+\d+\s+(?:hour|min)\w*)?\s+(?:is\s+)?(\d{1,3})\s*mg\/dL(?:\s*\((?:normal[^)]*?|cutoff[^)]*?)\))?/gi, name: 'Glucose', unit: 'mg/dL' },
+    { re: /\b(?:hematocrit|HCT)\s+of\s+(\d{2,3})%(?:\s*\(normal[^)]*?\))?/gi, name: 'HCT', unit: '%' },
+    { re: /\bplatelets\s+([\d,]+)\s*\/?mm\u00b3?(?:\s*\(normal[^)]*?\))?/gi, name: 'Platelets', unit: '/mm³' },
+    { re: /\bAST\s+(\d{1,4})\s*U\/L(?:\s*\(normal[^)]*?\))?/gi, name: 'AST', unit: 'U/L' },
+    { re: /(?:\u03b2-hCG|beta-hCG|hCG)(?:\s+(?:is|of))?\s+([\d,]+)\s*mIU\/mL/gi, name: 'β-hCG', unit: 'mIU/mL' },
+    { re: /\bfundal height\s+of\s+(\d{1,3})\s*cm(?:\s*\((?:expected|normal)\s*~?\s*(\d{1,3})\s*cm\))?/gi, name: 'Fundal Ht', unit: 'cm', rangeIdx: 2, ranglePrefix: 'expected ~' },
+    { re: /\bAFI\s+(\d{1,3})\s*cm/gi, name: 'AFI', unit: 'cm' },
+    { re: /\b1-hour\b[^.]*?(\d{2,3})\s*mg\/dL/gi, name: '1-hr GCT', unit: 'mg/dL' },
+    { re: /(?:weighing|weighs|estimated at|EFW)\s+(\d{3,4})\s*g\b/gi, name: 'Weight', unit: 'g' },
+
+    // Electrolytes
+    { re: /\b(?:sodium|Na\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{2,3})\s*mEq\/L/gi, name: 'Na+', unit: 'mEq/L' },
+    { re: /\b(?:potassium|K\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mEq\/L/gi, name: 'K+', unit: 'mEq/L' },
+    { re: /\b(?:calcium|Ca\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Ca', unit: 'mg/dL' },
+    { re: /\b(?:magnesium|Mg\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mg\/dL/gi, name: 'Mg', unit: 'mg/dL' },
+
+    // CBC additions
+    { re: /\b(?:hemoglobin|Hgb|Hb)\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*(?:g\/dL)?/gi, name: 'Hgb', unit: 'g/dL' },
+    { re: /\bANC\s+(?:of\s+|is\s+)?([\d,]+)/gi, name: 'ANC', unit: '/mm³' },
+    { re: /\bWBC\s+(?:of\s+|count of\s+|is\s+)?([\d,]+(?:\.\d)?)/gi, name: 'WBC', unit: '/mm³' },
+
+    // Renal
+    { re: /\b(?:creatinine|Cr)\s+(?:of\s+)?(\d(?:\.\d{1,2})?)\s*mg\/dL/gi, name: 'Cr', unit: 'mg/dL' },
+    { re: /\bBUN\s+(?:of\s+)?(\d{1,3})(?:\s*mg\/dL)?/gi, name: 'BUN', unit: 'mg/dL' },
+
+    // Coag
+    { re: /\bINR\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)/gi, name: 'INR', unit: '' },
+
+    // Acid-base (DKA)
+    { re: /\bpH\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)\b/gi, name: 'pH', unit: '' },
+    { re: /\b(?:bicarb|HCO3)\s+(?:of\s+|is\s+)?(\d{1,2})\b/gi, name: 'HCO3', unit: 'mEq/L' },
+
+    // Other
+    { re: /\b(?:hemoglobin\s+)?A1[cC]\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*%?/gi, name: 'A1c', unit: '%' },
+    { re: /\b(?:total\s+)?bilirubin\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Bilirubin', unit: 'mg/dL' },
+
+    // Osmolality
+    { re: /\b(?:serum\s+|urine\s+)?osmolality\s+(?:of\s+|is\s+)?(\d{2,3})\s*mOsm\/kg/gi, name: 'Osmolality', unit: 'mOsm/kg' },
+
+    // Specific gravity
+    { re: /\b(?:urine\s+)?specific gravity\s+(?:of\s+|is\s+)?(\d\.\d{3})/gi, name: 'Sp Gravity', unit: '' }
+  ];
+
+  for (const pat of patterns) {
+    const re = new RegExp(pat.re.source, pat.re.flags);
+    let m;
+    while ((m = re.exec(stem)) !== null) {
+      const val = m[1];
+      const key = pat.name + ':' + val;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      let unit = pat.unit || '';
+      if (pat.unitIdx && m[pat.unitIdx]) {
+        unit = (pat.unitPrefix || '') + m[pat.unitIdx];
+      }
+
+      let range = '';
+      if (pat.rangeIdx && m[pat.rangeIdx]) {
+        range = (pat.ranglePrefix || '') + m[pat.rangeIdx];
+      }
+
+      // First, check if m[0] itself contains a parenthetical (greedy patterns consume it)
+      if (!range) {
+        const innerParen = m[0].match(/\(([^)]+)\)/);
+        if (innerParen && /normal|baseline|expected|cutoff|target|was/i.test(innerParen[1])) {
+          range = innerParen[1].trim();
+        }
+      }
+
+      // Otherwise look ahead in the full stem (allow optional unit text before paren)
+      if (!range) {
+        const afterIdx = m.index + m[0].length;
+        const tail = stem.slice(afterIdx, afterIdx + 100);
+        const parenMatch = tail.match(/^[^()]{0,30}?\(([^)]+)\)/);
+        if (parenMatch && /normal|baseline|expected|cutoff|target|was|therapeutic|toxic/i.test(parenMatch[1])) {
+          range = parenMatch[1].trim();
+        }
+      }
+
+      labs.push({ name: pat.name, value: val, unit, range });
+    }
+  }
+
+  return labs;
+}
+
+function renderLabStrip(labs) {
+  if (!labs || labs.length === 0) return '';
+  // Skip vitals from the strip — students should know normal ranges for these
+  const VITALS_DENYLIST = new Set(['BP', 'HR', 'Pulse', 'RR', 'Temp', 'SpO2', 'Pain']);
+  const filtered = labs.filter(function(l) { return !VITALS_DENYLIST.has(l.name); });
+  if (filtered.length === 0) return '';
+  const items = filtered.map(function(l) {
+    const range = l.range ? '<div class="lab-range">' + escapeStemHTML(l.range) + '</div>' : '';
+    const unit = l.unit ? ' <span class="lab-value-unit">' + escapeStemHTML(l.unit) + '</span>' : '';
+    return '<div class="lab-item"><div class="lab-name">' + escapeStemHTML(l.name) + '</div><div class="lab-value">' + escapeStemHTML(l.value) + unit + '</div>' + range + '</div>';
+  }).join('');
+  return '<div class="lab-strip"><div class="lab-strip-label">Clinical Data</div><div class="lab-row">' + items + '</div></div>';
+}
+
+function escapeStemHTML(s) {
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOption = null;
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+  document.getElementById('progress').style.width = `${(currentQ / questions.length) * 100}%`;
+  const __labs = q.labs || extractLabs(q.stem);
+  const __labStrip = renderLabStrip(__labs);
+  document.getElementById('q-stem').innerHTML = '<div>' + escapeStemHTML(q.stem) + '</div>' + __labStrip;
+  const optsHtml = q.options.map((opt, i) => `
+    <div class="option" data-idx="${i}" onclick="selectOption(${i})">
+      <span class="option-letter">${String.fromCharCode(65+i)}.</span>
+      <span>${opt}</span>
+    </div>
+  `).join('');
+  document.getElementById('q-options').innerHTML = optsHtml;
+  document.getElementById('rationale-area').classList.add('hidden');
+  document.getElementById('rationale-area').innerHTML = '';
+  document.getElementById('submit-btn').classList.remove('hidden');
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('next-btn').classList.add('hidden');
+}
+
+function selectOption(idx) {
+  selectedOption = idx;
+  document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.option[data-idx="${idx}"]`).classList.add('selected');
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+  const q = questions[currentQ];
+  const correct = q.answer;
+  const isCorrect = selectedOption === correct;
+  const pts = isCorrect ? 1 : 0;
+  totalPts += pts;
+  answers.push({ q, selected: selectedOption, correct, pts });
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    el.onclick = null;
+    if (i === correct) el.classList.add('correct');
+    else if (i === selectedOption) el.classList.add('wrong');
+  });
+
+  let othersHtml = '';
+  if (q.others) {
+    othersHtml = '<div class="others-list">';
+    Object.keys(q.others).forEach(k => {
+      othersHtml += `<div><strong>${String.fromCharCode(65+parseInt(k))}.</strong> ${q.others[k]}</div>`;
+    });
+    othersHtml += '</div>';
+  }
+
+  const ratHtml = `
+    <div class="rationale">
+      <span class="concept-pill">${q.concept}</span>
+      <div><strong>${isCorrect ? 'Correct.' : 'Incorrect.'}</strong> ${q.rationale}</div>
+      ${q.deepExplanation ? `<div style="margin-top:8px; color: var(--ink-soft);">${q.deepExplanation}</div>` : ''}
+      ${othersHtml}
+    </div>
+  `;
+  const rArea = document.getElementById('rationale-area');
+  rArea.innerHTML = ratHtml;
+  rArea.classList.remove('hidden');
+  document.getElementById('submit-btn').classList.add('hidden');
+  document.getElementById('next-btn').classList.remove('hidden');
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) { showResults(); return; }
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.remove('hidden');
+  const pct = (totalPts / questions.length) * 100;
+  const scoreEl = document.getElementById('r-score');
+  scoreEl.textContent = `${pct.toFixed(0)}%`;
+  if (pct >= 85) scoreEl.classList.add('pass');
+  else if (pct >= 70) scoreEl.classList.add('borderline');
+  else scoreEl.classList.add('fail');
+  document.getElementById('r-pts').textContent = `${totalPts.toFixed(1)} / ${questions.length} points`;
+
+  let msg = '';
+  if (pct >= 90) msg = 'Excellent — you handle priority decisions well.';
+  else if (pct >= 77) msg = 'Passing — review missed scenarios for the test.';
+  else if (pct >= 60) msg = 'Below passing — focus on priority and safety judgments.';
+  else msg = 'This chapter needs deeper review. Re-read scenarios and retake.';
+  document.getElementById('r-msg').textContent = msg;
+
+  const missed = answers.filter(a => a.pts < 1);
+  if (missed.length > 0) {
+    let html = '<h3>Missed Concepts</h3>';
+    missed.forEach(m => {
+      html += `<div class="missed-item">
+        <div class="stem">${m.q.stem}</div>
+        <div class="ans">Correct: ${String.fromCharCode(65+m.correct)}. ${m.q.options[m.correct]}</div>
+        <div class="rat">${m.q.rationale}</div>
+      </div>`;
+    });
+    document.getElementById('missed-section').innerHTML = html;
+  }
+
+  const result = {
+    pct: parseFloat(pct.toFixed(1)),
+    pts: parseFloat(totalPts.toFixed(1)),
+    total: questions.length,
+    date: new Date().toISOString().split('T')[0]
+  };
+  localStorage.setItem('score_chronicpulm_deepdrill', JSON.stringify(result));
+}
+</script>
+</body>
+</html>

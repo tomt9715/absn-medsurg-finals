@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch 12 Oncology — Deep Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540;
+  --navy-soft: #1a3a5c;
+  --teal: #0d9488;
+  --teal-soft: #14b8a6;
+  --teal-pale: #f0fdfa;
+  --purple: #7c3aed;
+  --purple-soft: #8b5cf6;
+  --purple-pale: #f5f3ff;
+  --gold: #f59e0b;
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --muted: #6b7280;
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --line: #e5e0d5;
+  --correct: #059669;
+  --correct-bg: #ecfdf5;
+  --wrong: #dc2626;
+  --wrong-bg: #fef2f2;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  padding: 32px 16px 80px;
+  min-height: 100vh;
+}
+.container { max-width: 760px; margin: 0 auto; }
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--purple);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--navy);
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.tagline { color: var(--muted); margin-bottom: 32px; font-size: 16px; }
+.start-card, .question-card, .results-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.start-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+.start-stat {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+}
+.start-stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  color: var(--purple);
+  display: block;
+}
+.start-stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.btn {
+  background: var(--purple);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn:hover { background: #6d28d9; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-secondary { background: var(--navy); }
+.btn-secondary:hover { background: var(--navy-soft); }
+.progress-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--purple);
+  transition: width 0.3s;
+}
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.q-stem {
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+    .lab-strip { margin-top: 14px; margin-bottom: 18px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; border-left: 3px solid var(--teal); }
+    .lab-strip-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    .lab-row { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+    .lab-item { display: flex; flex-direction: column; gap: 2px; min-width: 90px; }
+    .lab-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+    .lab-value { font-size: 14px; color: var(--ink); font-weight: 600; }
+    .lab-value-unit { font-weight: 400; color: var(--muted); font-size: 11px; }
+    .lab-range { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.option {
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--card);
+  font-size: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.option:hover:not(.locked) { border-color: var(--purple); background: var(--purple-pale); }
+.option.selected { border-color: var(--purple); background: var(--purple-pale); }
+.option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+.option-letter {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--muted);
+  min-width: 18px;
+}
+.option.correct .option-letter { color: var(--correct); }
+.option.wrong .option-letter { color: var(--wrong); }
+.rationale {
+  background: var(--purple-pale);
+  border-left: 3px solid var(--purple);
+  padding: 16px 20px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.rationale strong { color: var(--navy); }
+.concept-pill {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  background: var(--purple);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.others-list {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.others-list div { margin-bottom: 6px; }
+.btn-row { display: flex; gap: 12px; justify-content: flex-end; }
+.results-score {
+  font-family: 'DM Serif Display', serif;
+  font-size: 56px;
+  text-align: center;
+  margin: 12px 0;
+}
+.results-score.pass { color: var(--correct); }
+.results-score.borderline { color: var(--partial); }
+.results-score.fail { color: var(--wrong); }
+.results-pts {
+  font-family: 'DM Mono', monospace;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.perf-msg {
+  text-align: center;
+  margin: 16px 0 32px;
+  font-size: 16px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.missed-section h3 {
+  font-family: 'DM Serif Display', serif;
+  color: var(--navy);
+  margin-bottom: 16px;
+  font-size: 22px;
+}
+.missed-item {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--bg);
+  font-size: 14px;
+}
+.missed-item .stem { font-weight: 500; margin-bottom: 8px; }
+.missed-item .ans { color: var(--correct); margin-bottom: 8px; font-family: 'DM Mono', monospace; font-size: 13px; }
+.missed-item .rat { color: var(--ink-soft); font-size: 13px; }
+.back-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: var(--navy);
+  color: white;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 50;
+}
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← STUDY HUB</a>
+<div class="container">
+
+<div id="start-screen">
+  <div class="eyebrow">Deep Drill · Chapter 12</div>
+  <h1>Oncology Nursing Management</h1>
+  <p class="tagline">NCLEX-style application: priority decisions, neutropenic safety calls, radiation isolation judgments, sepsis recognition.</p>
+  <div class="start-card">
+    <div class="start-stats">
+      <div class="start-stat"><span class="start-stat-num">25</span><span class="start-stat-label">Questions</span></div>
+      <div class="start-stat"><span class="start-stat-num">MC</span><span class="start-stat-label">Format</span></div>
+      <div class="start-stat"><span class="start-stat-num">Yes</span><span class="start-stat-label">Rationale</span></div>
+    </div>
+    <p style="margin-bottom: 20px; color: var(--ink-soft);">Higher-difficulty NCLEX-style scenarios. Apply your knowledge to priority and clinical-judgment situations.</p>
+    <button class="btn" onclick="begin()">Begin</button>
+  </div>
+</div>
+
+<div id="quiz-screen" class="hidden">
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="question-card">
+    <div class="q-header">
+      <span id="q-counter">Question 1 of 25</span>
+      <span id="q-points">0 pts</span>
+    </div>
+    <div class="q-stem" id="q-stem"></div>
+    <div class="options" id="q-options"></div>
+    <div id="rationale-area" class="hidden"></div>
+    <div class="btn-row">
+      <button class="btn" id="submit-btn" onclick="submitAnswer()" disabled>Submit</button>
+      <button class="btn btn-secondary hidden" id="next-btn" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+</div>
+
+<div id="results-screen" class="hidden">
+  <div class="results-card">
+    <div class="eyebrow">Results · Deep Drill</div>
+    <h1>Oncology</h1>
+    <div class="results-score" id="r-score">0%</div>
+    <div class="results-pts" id="r-pts">0 / 25 points</div>
+    <div class="perf-msg" id="r-msg"></div>
+    <div class="btn-row" style="justify-content: center; margin-bottom: 32px;">
+      <button class="btn" onclick="location.reload()">Retry Quiz</button>
+      <a href="index.html" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Back to Hub</a>
+    </div>
+    <div class="missed-section" id="missed-section"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A nurse is caring for four chemo patients. Which patient should the nurse assess FIRST?",
+    options: [
+      "A patient reporting mild nausea 6 hours after chemo infusion",
+      "A patient asking about hair loss and scalp care",
+      "A patient with mild fatigue after morning ambulation",
+      "A patient with a temperature of 100.6°F and a productive cough"
+    ],
+    answer: 3,
+    concept: "Priority Triage",
+    rationale: "Fever ≥100.4°F with respiratory symptoms in a chemo patient = possible sepsis. Assess first and notify provider — the immune system cannot fight infection alone.",
+    others: {
+      "0": "Mild nausea is expected post-chemo; antiemetic management is appropriate but not most urgent.",
+      "1": "Hair loss is a psychosocial concern but not life-threatening.",
+      "2": "Mild fatigue is expected with chemo-induced anemia."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A neutropenic patient's family member arrives with a vase of fresh-cut flowers and a fruit basket. What is the nurse's best response?",
+    options: [
+      "Place the flowers in the windowsill and wash the fruit before serving.",
+      "Both items pose infection risk and must remain outside the room.",
+      "Allow the flowers but discard the fruit basket immediately.",
+      "Allow both — the patient needs comfort items during treatment."
+    ],
+    answer: 1,
+    concept: "Neutropenic Environment",
+    rationale: "Fresh flowers, plants, and unwashed fruit can carry pathogens (mold, bacteria) that a neutropenic patient cannot fight. Both must stay out.",
+    others: {
+      "0": "Even washed, fresh fruit and flowers carry environmental pathogens.",
+      "2": "Flowers also carry mold and bacteria — both must be removed.",
+      "3": "Comfort does not override infection prevention in neutropenia."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemo patient has a platelet count of 28,000 (normal 150,000-400,000). Which finding requires immediate nursing intervention?",
+    options: [
+      "Mild fatigue with morning ambulation",
+      "New severe headache with confusion",
+      "Soft-bristle toothbrush at the bedside",
+      "Loss of appetite at lunch"
+    ],
+    answer: 1,
+    concept: "Bleeding Risk Recognition",
+    rationale: "Severe headache with confusion in a thrombocytopenic patient suggests possible intracranial bleeding — a medical emergency. Notify the provider immediately.",
+    others: {
+      "0": "Mild fatigue is expected with anemia and not an immediate emergency.",
+      "2": "Soft-bristle toothbrushes are appropriate — this is a correct safety measure.",
+      "3": "Decreased appetite is common with chemo."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient receiving brachytherapy for prostate cancer is in a private room with a radiation warning sign. A new graduate nurse asks why she cannot stay in the room to chart. What is the best response?",
+    options: [
+      "\"You may stay as long as you wear gloves and a gown.\"",
+      "\"You can stay up to 2 hours per shift if you wear a lead apron.\"",
+      "\"It's only a precaution; routine charting in the room is fine.\"",
+      "\"Limit time at the bedside and wear a lead apron during direct contact.\""
+    ],
+    answer: 3,
+    concept: "Radiation Time/Distance",
+    rationale: "Limit time at the bedside and wear a lead apron during direct patient contact. The principles are time, distance, and shielding to minimize exposure.",
+    others: {
+      "0": "Gloves and gown do not block radiation — a lead apron is required.",
+      "1": "2 hours per shift is excessive for unshielded staff exposure.",
+      "2": "Routine charting at bedside violates radiation safety principles."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient is receiving IV vincristine (a vesicant) through a peripheral IV. Mid-infusion, the patient reports new burning at the IV site and the nurse notes redness and swelling spreading from the insertion point. Which action is the priority?",
+    options: [
+      "Continue the infusion at a slower rate and monitor for resolution",
+      "Flush the line with normal saline and resume the infusion",
+      "Remove the catheter quickly and apply a warm compress",
+      "Stop the infusion, leave catheter in place, aspirate residual, notify provider"
+    ],
+    answer: 3,
+    concept: "Vesicant Extravasation",
+    rationale: "Vesicant extravasation can cause severe tissue necrosis, possibly leading to amputation or grafting. STOP the infusion immediately, but LEAVE the catheter in place — it's used to aspirate residual drug from the tissue and may be the route for an antidote. Notify provider, apply warm or cold compresses (depends on agent — vincristine = WARM, anthracyclines = COLD), and follow agent-specific antidote protocol (e.g., dexrazoxane for anthracyclines). Continuing or restarting infusion makes the injury much worse.",
+    others: {
+      "0": "Continuing infusion of a vesicant into extravasated tissue causes massive injury.",
+      "1": "Flushing pushes more drug into the tissue — opposite of needed.",
+      "2": "Removing the catheter loses the ability to aspirate the drug from tissue."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient is being taught about chemotherapy-induced neutropenia. The patient asks when they are at highest risk for infection after chemo. Which response is BEST?",
+    options: [
+      "Risk peaks in the first 24 hours after the infusion ends",
+      "Nadir occurs 7-14 days after chemo — highest infection risk window",
+      "There is no specific high-risk window; risk is constant",
+      "The risk only begins after the third or fourth chemo cycle"
+    ],
+    answer: 1,
+    concept: "Chemo Nadir Timing",
+    rationale: "The \"nadir\" — when blood counts (especially neutrophils) reach their lowest point — typically occurs 7-14 days after chemotherapy administration. This is when infection risk is highest. Patients should monitor for fever, avoid sick contacts, and report any temperature ≥100.4°F (38°C) immediately during this window. Counts then recover by ~21-28 days, just before the next cycle. Knowing the nadir helps patients time their precautions.",
+    others: {
+      "0": "Counts haven't dropped yet at 24 hours; nadir is days later.",
+      "2": "Risk is highly time-dependent on the cell life cycle.",
+      "3": "Risk can occur with any cycle — and severity often increases with cumulative dosing."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A nurse is teaching a chemo patient about reporting side effects. Which statement indicates the patient needs more teaching?",
+    options: [
+      "\"I'll call my doctor if I have a fever over 100.4°F that lasts more than an hour.\"",
+      "\"I should use an electric razor instead of a regular razor.\"",
+      "\"I can take aspirin if I get a headache from the chemo.\"",
+      "\"I need to drink 2 to 3 liters of fluid every day.\""
+    ],
+    answer: 2,
+    concept: "Aspirin Avoidance",
+    rationale: "Aspirin increases bleeding risk in thrombocytopenic patients and must be avoided. The patient needs more teaching — acetaminophen is preferred.",
+    others: {
+      "0": "Correct — fever ≥100.4°F lasting >1 hour requires reporting.",
+      "1": "Correct — electric razors prevent nicks and bleeding.",
+      "3": "Correct — 2-3 L/day is the recommended hydration goal."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A pregnant nurse is assigned to a patient with a brachytherapy implant. What is the most appropriate action?",
+    options: [
+      "Provide care while wearing two lead aprons.",
+      "Limit time at the bedside to 15 minutes per shift.",
+      "Decline the assignment and request a reassignment.",
+      "Stay 6 feet from the patient while providing care."
+    ],
+    answer: 2,
+    concept: "Pregnancy Reassignment",
+    rationale: "Pregnant nurses must NOT care for brachytherapy patients due to fetal radiation exposure risk. Decline and request reassignment.",
+    others: {
+      "0": "Lead aprons reduce but do not eliminate fetal exposure.",
+      "1": "Any direct exposure during pregnancy is contraindicated.",
+      "3": "6 feet of distance does not eliminate radiation risk for a fetus."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemo patient has the labs below. Which precaution is the priority?",
+    options: [
+      "Bleeding precautions",
+      "Falls precautions only",
+      "Dietary fluid restriction",
+      "Neutropenic precautions"
+    ],
+    answer: 3,
+    concept: "Combined Precautions Priority",
+    rationale: "WBC of 1.8 indicates severe leukopenia — neutropenic precautions are the priority because infection is the leading cause of death in cancer patients.",
+    others: {
+      "0": "Bleeding precautions matter (platelets borderline) but infection is more lethal.",
+      "1": "Falls precautions for anemia are appropriate but not the top priority.",
+      "2": "No indication for fluid restriction; chemo patients need hydration."
+    },
+    labs: [
+      {
+        "name": "WBC",
+        "value": "1.8",
+        "unit": "K/mm³",
+        "range": "normal 4-11"
+      },
+      {
+        "name": "Platelets",
+        "value": "110,000",
+        "unit": "/mm³",
+        "range": "normal 150,000-400,000"
+      },
+      {
+        "name": "Hgb",
+        "value": "9.2",
+        "unit": "g/dL",
+        "range": "normal 12-18"
+      }
+    ]
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with a brachytherapy implant accidentally dislodges it onto the bed. What is the nurse's priority action?",
+    options: [
+      "Pick it up with bare hands and return it to the radiation department.",
+      "Use long-handled forceps to place it in a lead container; do not touch it.",
+      "Flush it down the toilet to dispose of safely.",
+      "Wrap it in gauze and place it in a regular trash bag."
+    ],
+    answer: 1,
+    concept: "Dislodged Implant",
+    rationale: "Use long-handled forceps to pick up a dislodged implant and place it in a lead-lined container. Never touch it directly. Notify the radiation safety officer immediately.",
+    others: {
+      "0": "Direct handling exposes the nurse to dangerous radiation doses.",
+      "2": "Flushing contaminates the water system with radioactive material.",
+      "3": "Standard trash disposal is unsafe and illegal."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemotherapy patient on day 8 post-infusion has painful oral ulcers, white patches, difficulty swallowing, and reports a 5-pound weight loss this week from poor intake. Which intervention is the priority?",
+    options: [
+      "Notify provider — severe mucositis needs opioid pain control and possible antifungals",
+      "Encourage spicy foods to stimulate appetite and salivation",
+      "Reassure the patient that mucositis always resolves on its own",
+      "Recommend hydrogen peroxide rinses to clean the ulcers"
+    ],
+    answer: 0,
+    concept: "Severe Mucositis",
+    rationale: "Severe mucositis (Grade 3-4) involves painful ulcers preventing oral intake, weight loss, and risk of secondary infection (often candidiasis — the white patches here). Management: opioid pain control (oral or IV), magic mouthwash (lidocaine + diphenhydramine + antacid) for mild, antifungals if thrush present, nutrition support (TPN if oral intake fails), avoid spicy/acidic/hot foods. Hydrogen peroxide is too harsh and can damage healing tissue.",
+    others: {
+      "1": "Spicy foods worsen mucositis pain; bland soft foods recommended.",
+      "2": "Severe mucositis with weight loss requires intervention, not watchful waiting.",
+      "3": "Hydrogen peroxide rinses are NOT recommended — they damage healing oral tissue."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient on paclitaxel for 4 cycles reports new numbness and tingling in fingers and toes that \"feels like pins and needles\" and is now affecting their ability to button shirts. Which is the BEST nursing action?",
+    options: [
+      "Reassure that this is a normal expected side effect that resolves immediately",
+      "Recommend over-the-counter ibuprofen for the symptoms",
+      "Notify provider — CIPN may need dose adjustment to prevent permanent damage",
+      "Increase the chemotherapy dose to overcome the neurologic side effects"
+    ],
+    answer: 2,
+    concept: "Chemo-Induced Peripheral Neuropathy",
+    rationale: "Chemotherapy-induced peripheral neuropathy (CIPN) — common with taxanes (paclitaxel), platinum agents, vincristine. Symptoms: numbness, tingling, burning, \"pins and needles\" in stocking-glove distribution; can progress to motor weakness affecting fine motor function (buttons, writing). Cumulative dose-dependent. Provider notification is critical because dose reduction or discontinuation may prevent permanent damage. Management: gabapentin, duloxetine, dose modification. Safety teaching: protect hands/feet from temperature extremes, fall precautions.",
+    others: {
+      "0": "CIPN can become permanent if not addressed — not \"normal expected\" without action.",
+      "1": "NSAIDs do not address neuropathy mechanism.",
+      "3": "Increasing dose worsens neuropathy and risks permanence."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient receiving chemotherapy reports new burning during urination. What is the nurse's priority action?",
+    options: [
+      "Tell the patient to drink more water and recheck in 24 hours.",
+      "Recommend over-the-counter cranberry supplements.",
+      "Notify the provider — this may indicate UTI in an immunocompromised patient.",
+      "Document the finding and reassess at the next chemo visit."
+    ],
+    answer: 2,
+    concept: "New UTI Symptoms",
+    rationale: "New burning urination in a chemo patient may indicate UTI, which can rapidly progress to urosepsis in an immunocompromised host. Notify the provider promptly.",
+    others: {
+      "0": "Watchful waiting is dangerous in immunosuppression.",
+      "1": "Cranberry supplements do not treat active infection.",
+      "3": "Documentation alone delays urgent treatment."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient receiving radiation to the chest reports the skin in the treatment area is red and itchy. Which intervention is appropriate?",
+    options: [
+      "Clean gently with mild soap and water; avoid lotions unless prescribed.",
+      "Apply ice packs for 20 minutes every hour to reduce inflammation.",
+      "Apply hydrocortisone cream from the pharmacy aisle.",
+      "Cover the area with a tight-fitting compression shirt."
+    ],
+    answer: 0,
+    concept: "Radiation Skin Reaction",
+    rationale: "Mild radiation dermatitis is managed by gentle cleansing with mild soap and water. Avoid lotions, powders, or cosmetics unless specifically prescribed.",
+    others: {
+      "1": "Extreme temperatures damage radiated skin.",
+      "2": "OTC creams may interact with radiation and worsen reactions.",
+      "3": "Tight clothing causes friction and worsens skin breakdown."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A nurse is reviewing chemo orders for a patient with a history of heart failure. Which order should the nurse question?",
+    options: [
+      "Schedule pre-chemo cardiac echocardiogram.",
+      "Administer ondansetron 30 minutes before chemo.",
+      "Bolus 2 liters of normal saline rapidly before chemo.",
+      "Monitor temperature every 4 hours after infusion."
+    ],
+    answer: 2,
+    concept: "Cardiotoxicity Caution",
+    rationale: "Rapid 2-liter saline bolus could trigger fluid overload in a heart failure patient — especially since chemo carries cardiotoxicity risk. Question this order.",
+    others: {
+      "0": "Pre-chemo echo is appropriate to establish baseline cardiac function.",
+      "1": "Ondansetron is standard pre-medication for nausea.",
+      "3": "Temperature monitoring is appropriate to detect infection."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemo patient develops sudden flank pain, decreased urine output, and lab results show K+ 5.9 (normal 3.5-5.0), phosphate 6.2 (normal 2.5-4.5), calcium 7.1 (normal 9-10.5). Which complication does the nurse suspect?",
+    options: [
+      "Diabetic ketoacidosis",
+      "Tumor lysis syndrome",
+      "Acute pancreatitis",
+      "Hypovolemic shock"
+    ],
+    answer: 1,
+    concept: "Tumor Lysis Recognition",
+    rationale: "Hyperkalemia, hyperphosphatemia, hypocalcemia, and renal symptoms after chemo = classic tumor lysis syndrome. Massive cell breakdown overwhelms the kidneys.",
+    others: {
+      "0": "DKA presents with hyperglycemia and acidosis, not these specific electrolyte patterns.",
+      "2": "Pancreatitis presents with epigastric pain and elevated lipase.",
+      "3": "Shock presents with hypotension and tachycardia, not these labs."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with an implanted port (Port-a-Cath) for chemotherapy is being seen in clinic. The port has not been used in 6 weeks. Which nursing action is most appropriate?",
+    options: [
+      "Access the port routinely without flushing or special precautions",
+      "Use sterile technique with a Huber needle; flush before/after; check patency",
+      "Refuse to access until a peripheral IV is also established for backup",
+      "Use a regular hypodermic needle and standard IV bag for any infusion"
+    ],
+    answer: 1,
+    concept: "Implanted Port Access",
+    rationale: "Implanted ports are accessed using STERILE technique with a NON-CORING (Huber) needle — a regular hypodermic needle would damage the port septum. Flush before access (to confirm patency), administer fluid/medication, and flush after with saline + heparin (per institutional protocol). Ports not in use require monthly heparin flushes to maintain patency. Assess for blood return and absence of pain/swelling during access.",
+    others: {
+      "0": "Without flushing/assessment, occlusion or extravasation can occur.",
+      "2": "No need for backup peripheral IV with a functioning port.",
+      "3": "Hypodermic needles destroy the port septum — Huber needles are required."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with leukemia has the lab below and the following findings. Which finding requires immediate provider notification?",
+    options: [
+      "Temperature of 100.5°F",
+      "Mild fatigue throughout the day",
+      "Hemoglobin of 10.1 g/dL (normal 12-18)",
+      "Pink mucous membranes"
+    ],
+    answer: 0,
+    concept: "Severe Neutropenia + Fever",
+    rationale: "In severe neutropenia (ANC <500), a temperature of 100.4°F or higher is a medical emergency. Notify provider immediately for cultures and empiric antibiotics.",
+    others: {
+      "1": "Fatigue is expected with anemia.",
+      "2": "Hemoglobin 10.1 is mild anemia, not emergent.",
+      "3": "Pink mucous membranes is a normal finding."
+    },
+    labs: [
+      {
+        "name": "ANC",
+        "value": "300",
+        "unit": "/mm³",
+        "range": "normal 1,500-8,000"
+      }
+    ]
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient is receiving the first dose of paclitaxel. Five minutes into the infusion, the patient develops sudden flushing, dyspnea, back pain, and BP drops from 128/76 to 88/54. Which is the priority action?",
+    options: [
+      "Stop the infusion, keep IV access, notify provider for emergency meds",
+      "Slow the infusion rate and continue monitoring",
+      "Administer the next scheduled dose of antiemetic",
+      "Document findings and reassess in 30 minutes"
+    ],
+    answer: 0,
+    concept: "Acute Infusion Hypersensitivity",
+    rationale: "Acute hypersensitivity reactions are most common with paclitaxel, rituximab, platinum agents — can occur within minutes of starting. Symptoms: flushing, dyspnea, back/chest pain, hypotension, urticaria. Priority actions: STOP the infusion, KEEP IV access (use to give emergency meds), notify provider, prepare epinephrine, antihistamines, corticosteroids, oxygen. Most chemo with hypersensitivity risk requires premedication (steroids + H1/H2 blockers) — but reactions can still occur. Slowing or continuing the infusion can be fatal.",
+    others: {
+      "1": "Continuing at any rate during anaphylaxis is dangerous.",
+      "2": "Antiemetics do not treat hypersensitivity reaction.",
+      "3": "Delay during anaphylaxis is potentially fatal."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemo patient develops oral pain and white plaques on the tongue. Which finding does the nurse suspect, and what is the priority?",
+    options: [
+      "Stomatitis from chemo; encourage warm tea rinses.",
+      "Normal post-chemo finding; no intervention needed.",
+      "Allergic reaction to medications; stop all oral meds.",
+      "Oral candidiasis (thrush); notify provider for antifungal therapy."
+    ],
+    answer: 3,
+    concept: "Oral Candidiasis",
+    rationale: "White plaques on the tongue in an immunocompromised patient suggest oral candidiasis (thrush), an opportunistic infection requiring antifungal treatment.",
+    others: {
+      "0": "Stomatitis presents as ulcers and inflammation, not white plaques.",
+      "1": "Thrush requires intervention to prevent spread and worsening.",
+      "2": "Stopping all oral meds without provider guidance is unsafe."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient who completed radiation therapy to the chest 8 weeks ago for lung cancer presents with new dry cough, low-grade fever, and dyspnea on exertion. Chest imaging shows infiltrates limited to the radiation field. Which complication does the nurse suspect?",
+    options: [
+      "Bacterial pneumonia from a routine respiratory infection",
+      "Pulmonary embolism from cancer-related hypercoagulability",
+      "Recurrence of the lung cancer with rapid progression",
+      "Radiation pneumonitis — inflammation in the irradiated lung tissue"
+    ],
+    answer: 3,
+    concept: "Radiation Pneumonitis",
+    rationale: "Radiation pneumonitis develops 4-12 weeks (sometimes up to 6 months) after thoracic radiation. Symptoms: dry cough, dyspnea, low-grade fever, fatigue. Imaging shows infiltrates LIMITED to the radiation field (a key clue). Treatment: corticosteroids for moderate-severe cases, supportive care, monitor for progression to chronic radiation fibrosis. Bacterial pneumonia can occur but typically isn't confined to the radiation field.",
+    others: {
+      "0": "Bacterial pneumonia infiltrates aren't typically confined to the radiation field.",
+      "1": "PE shows different imaging findings (not infiltrates in radiation field).",
+      "2": "Recurrence pattern would not be limited to old radiation field with this clinical picture."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A chemo patient with severe nausea has not eaten in 24 hours. Which intervention should the nurse implement first?",
+    options: [
+      "Force fluids and a regular diet to maintain calorie intake.",
+      "Administer prescribed antiemetic and offer small frequent meals.",
+      "Insert a nasogastric tube for tube feeding.",
+      "Hold all oral intake until nausea fully resolves."
+    ],
+    answer: 1,
+    concept: "Antiemetic Priority",
+    rationale: "Administer the prescribed antiemetic first, then offer small frequent meals. Pre-medication with antiemetics is the cornerstone of managing chemo-induced nausea.",
+    others: {
+      "0": "Forcing food worsens nausea and can trigger vomiting.",
+      "2": "NG tube is invasive and inappropriate before trying antiemetics.",
+      "3": "Prolonged NPO worsens fluid/electrolyte status."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with metastatic stage 4 cancer is being admitted for palliative care. The patient asks the nurse, \"What does it mean to have an advance directive? My family keeps avoiding the topic.\" Which response is BEST?",
+    options: [
+      "Explain that advance directives document treatment preferences and proxy choice",
+      "Avoid the topic since the family is uncomfortable",
+      "Tell the patient they don't need an advance directive at this stage",
+      "Refer the patient to call a lawyer to handle this themselves"
+    ],
+    answer: 0,
+    concept: "Advance Directives in Oncology",
+    rationale: "Patients with advanced cancer benefit from advance care planning conversations early — it improves goal-concordant care, reduces unwanted interventions, and supports family preparation. Components: living will (treatment preferences), durable power of attorney for healthcare (proxy), POLST/MOLST (provider orders for life-sustaining treatment), code status. Nurses can introduce the topic, provide education, and refer to social work, chaplaincy, or palliative care for support. Avoiding the topic abandons the patient's expressed need.",
+    others: {
+      "1": "Patient is asking; avoiding the topic dismisses their stated need.",
+      "2": "Advanced disease is the IDEAL time for these conversations.",
+      "3": "Lawyers handle some legal aspects, but nursing/social work supports the process."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with metastatic prostate cancer presents with new severe back pain, bilateral leg weakness, and new urinary retention. The nurse recognizes this constellation as which oncologic emergency?",
+    options: [
+      "Tumor lysis syndrome from the recent chemotherapy",
+      "Routine cancer-related fatigue requiring rest only",
+      "Malignant spinal cord compression — needs steroids and urgent MRI",
+      "Common low back strain from inactivity"
+    ],
+    answer: 2,
+    concept: "Malignant Spinal Cord Compression",
+    rationale: "Spinal cord compression from metastases is an oncologic EMERGENCY — every hour delay risks permanent paraplegia and bladder/bowel dysfunction. Classic features: progressive back pain, motor weakness (legs > arms typically), sensory changes, autonomic dysfunction (urinary retention, bowel changes, saddle anesthesia). Immediate management: high-dose IV dexamethasone, urgent MRI, and urgent radiation oncology + neurosurgery consultation. Most common in prostate, breast, lung cancers with bony mets.",
+    others: {
+      "0": "TLS shows lab abnormalities (high K+, phos, uric acid, low Ca) — not neurologic findings.",
+      "1": "New weakness + retention is never just fatigue in metastatic cancer.",
+      "3": "Back strain doesn't cause leg weakness or urinary retention."
+    }
+  },
+  {
+    topic: "Oncology",
+    type: "standard",
+    stem: "A patient with newly diagnosed lung cancer presents with progressive facial swelling, distended neck veins, dyspnea, and \"fullness\" in the head when lying flat. Symptoms have worsened over 1 week. Which oncologic emergency does the nurse suspect?",
+    options: [
+      "Anaphylactic reaction to chemotherapy already started",
+      "Common upper respiratory infection with sinus involvement",
+      "Acute heart failure from cardiotoxic chemotherapy",
+      "Superior vena cava (SVC) syndrome from tumor compression"
+    ],
+    answer: 3,
+    concept: "SVC Syndrome",
+    rationale: "SVC syndrome — tumor (most often lung cancer or lymphoma) compresses the superior vena cava, blocking venous return from the head and upper body. Classic findings: facial/upper extremity swelling, distended neck and chest veins, dyspnea, \"fullness\" in head/face especially when supine, sometimes hoarseness or stridor. Treatment: head of bed elevated (improves venous drainage), oxygen, urgent oncology evaluation, often radiation + chemotherapy +/- stenting. Patient hasn't started chemo yet, so treatment-related causes are unlikely.",
+    others: {
+      "0": "Patient is newly diagnosed; chemo hasn't started yet.",
+      "1": "URI doesn't cause facial swelling and progressive dyspnea.",
+      "2": "HF causes lower extremity edema and lung crackles, not facial swelling and neck vein distention from tumor compression."
+    }
+  }
+];
+
+// === QUIZ ENGINE ===
+let currentQ = 0;
+let totalPts = 0;
+let answers = [];
+let selectedOption = null;
+
+function begin() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  renderQuestion();
+}
+
+function extractLabs(stem) {
+  const labs = [];
+  const seen = new Set();
+
+  // Each pattern: { re, name, unit (or unitFromMatch index), rangeFromMatch (optional) }
+  const patterns = [
+    { re: /\bBP\s+(\d{2,3}\/\d{2,3})(?:\s*\((?:baseline|normal)\s+([\d\/<>≥≤\-–\s]+)\))?/gi, name: 'BP', unit: 'mmHg', rangeIdx: 2, ranglePrefix: 'baseline ' },
+    { re: /\bHR\s+(\d{2,3})\b/gi, name: 'HR', unit: 'bpm' },
+    { re: /\bpulse\s+(\d{2,3})\b/gi, name: 'Pulse', unit: 'bpm' },
+    { re: /\b(?:temperature|temp)[\s:]+(\d{2,3}(?:\.\d)?)\s*°?\s*([CF])\b/gi, name: 'Temp', unitIdx: 2, unitPrefix: '°' },
+    { re: /\b(?:respiratory rate|RR)\s+(\d{1,3})(?:\/min)?(?:\s*\(was\s+(\d+)\/?(?:min)?\))?\b/gi, name: 'RR', unit: '/min', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:urine output|UOP)\s+(\d{1,3})\s*mL\/hr(?:\s*\(was\s+(\d+)\s*mL\/hr\))?\b/gi, name: 'UOP', unit: 'mL/hr', rangeIdx: 2, ranglePrefix: 'was ' },
+    { re: /\b(?:bedside\s+)?(?:blood\s+)?glucose(?:\s+is|\s+at\s+\d+\s+(?:hour|min)\w*)?\s+(?:is\s+)?(\d{1,3})\s*mg\/dL(?:\s*\((?:normal[^)]*?|cutoff[^)]*?)\))?/gi, name: 'Glucose', unit: 'mg/dL' },
+    { re: /\b(?:hematocrit|HCT)\s+of\s+(\d{2,3})%(?:\s*\(normal[^)]*?\))?/gi, name: 'HCT', unit: '%' },
+    { re: /\bplatelets\s+([\d,]+)\s*\/?mm\u00b3?(?:\s*\(normal[^)]*?\))?/gi, name: 'Platelets', unit: '/mm³' },
+    { re: /\bAST\s+(\d{1,4})\s*U\/L(?:\s*\(normal[^)]*?\))?/gi, name: 'AST', unit: 'U/L' },
+    { re: /(?:\u03b2-hCG|beta-hCG|hCG)(?:\s+(?:is|of))?\s+([\d,]+)\s*mIU\/mL/gi, name: 'β-hCG', unit: 'mIU/mL' },
+    { re: /\bfundal height\s+of\s+(\d{1,3})\s*cm(?:\s*\((?:expected|normal)\s*~?\s*(\d{1,3})\s*cm\))?/gi, name: 'Fundal Ht', unit: 'cm', rangeIdx: 2, ranglePrefix: 'expected ~' },
+    { re: /\bAFI\s+(\d{1,3})\s*cm/gi, name: 'AFI', unit: 'cm' },
+    { re: /\b1-hour\b[^.]*?(\d{2,3})\s*mg\/dL/gi, name: '1-hr GCT', unit: 'mg/dL' },
+    { re: /(?:weighing|weighs|estimated at|EFW)\s+(\d{3,4})\s*g\b/gi, name: 'Weight', unit: 'g' },
+
+    // Electrolytes
+    { re: /\b(?:sodium|Na\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{2,3})\s*mEq\/L/gi, name: 'Na+', unit: 'mEq/L' },
+    { re: /\b(?:potassium|K\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mEq\/L/gi, name: 'K+', unit: 'mEq/L' },
+    { re: /\b(?:calcium|Ca\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Ca', unit: 'mg/dL' },
+    { re: /\b(?:magnesium|Mg\+?\+?)\s+(?:level\s+)?(?:of\s+|is\s+)?(\d(?:\.\d)?)\s*mg\/dL/gi, name: 'Mg', unit: 'mg/dL' },
+
+    // CBC additions
+    { re: /\b(?:hemoglobin|Hgb|Hb)\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*(?:g\/dL)?/gi, name: 'Hgb', unit: 'g/dL' },
+    { re: /\bANC\s+(?:of\s+|is\s+)?([\d,]+)/gi, name: 'ANC', unit: '/mm³' },
+    { re: /\bWBC\s+(?:of\s+|count of\s+|is\s+)?([\d,]+(?:\.\d)?)/gi, name: 'WBC', unit: '/mm³' },
+
+    // Renal
+    { re: /\b(?:creatinine|Cr)\s+(?:of\s+)?(\d(?:\.\d{1,2})?)\s*mg\/dL/gi, name: 'Cr', unit: 'mg/dL' },
+    { re: /\bBUN\s+(?:of\s+)?(\d{1,3})(?:\s*mg\/dL)?/gi, name: 'BUN', unit: 'mg/dL' },
+
+    // Coag
+    { re: /\bINR\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)/gi, name: 'INR', unit: '' },
+
+    // Acid-base (DKA)
+    { re: /\bpH\s+(?:of\s+|is\s+)?(\d(?:\.\d{1,2})?)\b/gi, name: 'pH', unit: '' },
+    { re: /\b(?:bicarb|HCO3)\s+(?:of\s+|is\s+)?(\d{1,2})\b/gi, name: 'HCO3', unit: 'mEq/L' },
+
+    // Other
+    { re: /\b(?:hemoglobin\s+)?A1[cC]\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*%?/gi, name: 'A1c', unit: '%' },
+    { re: /\b(?:total\s+)?bilirubin\s+(?:of\s+|is\s+)?(\d{1,2}(?:\.\d)?)\s*mg\/dL/gi, name: 'Bilirubin', unit: 'mg/dL' },
+
+    // Osmolality
+    { re: /\b(?:serum\s+|urine\s+)?osmolality\s+(?:of\s+|is\s+)?(\d{2,3})\s*mOsm\/kg/gi, name: 'Osmolality', unit: 'mOsm/kg' },
+
+    // Specific gravity
+    { re: /\b(?:urine\s+)?specific gravity\s+(?:of\s+|is\s+)?(\d\.\d{3})/gi, name: 'Sp Gravity', unit: '' }
+  ];
+
+  for (const pat of patterns) {
+    const re = new RegExp(pat.re.source, pat.re.flags);
+    let m;
+    while ((m = re.exec(stem)) !== null) {
+      const val = m[1];
+      const key = pat.name + ':' + val;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      let unit = pat.unit || '';
+      if (pat.unitIdx && m[pat.unitIdx]) {
+        unit = (pat.unitPrefix || '') + m[pat.unitIdx];
+      }
+
+      let range = '';
+      if (pat.rangeIdx && m[pat.rangeIdx]) {
+        range = (pat.ranglePrefix || '') + m[pat.rangeIdx];
+      }
+
+      // First, check if m[0] itself contains a parenthetical (greedy patterns consume it)
+      if (!range) {
+        const innerParen = m[0].match(/\(([^)]+)\)/);
+        if (innerParen && /normal|baseline|expected|cutoff|target|was/i.test(innerParen[1])) {
+          range = innerParen[1].trim();
+        }
+      }
+
+      // Otherwise look ahead in the full stem (allow optional unit text before paren)
+      if (!range) {
+        const afterIdx = m.index + m[0].length;
+        const tail = stem.slice(afterIdx, afterIdx + 100);
+        const parenMatch = tail.match(/^[^()]{0,30}?\(([^)]+)\)/);
+        if (parenMatch && /normal|baseline|expected|cutoff|target|was|therapeutic|toxic/i.test(parenMatch[1])) {
+          range = parenMatch[1].trim();
+        }
+      }
+
+      labs.push({ name: pat.name, value: val, unit, range });
+    }
+  }
+
+  return labs;
+}
+
+function renderLabStrip(labs) {
+  if (!labs || labs.length === 0) return '';
+  // Skip vitals from the strip — students should know normal ranges for these
+  const VITALS_DENYLIST = new Set(['BP', 'HR', 'Pulse', 'RR', 'Temp', 'SpO2', 'Pain']);
+  const filtered = labs.filter(function(l) { return !VITALS_DENYLIST.has(l.name); });
+  if (filtered.length === 0) return '';
+  const items = filtered.map(function(l) {
+    const range = l.range ? '<div class="lab-range">' + escapeStemHTML(l.range) + '</div>' : '';
+    const unit = l.unit ? ' <span class="lab-value-unit">' + escapeStemHTML(l.unit) + '</span>' : '';
+    return '<div class="lab-item"><div class="lab-name">' + escapeStemHTML(l.name) + '</div><div class="lab-value">' + escapeStemHTML(l.value) + unit + '</div>' + range + '</div>';
+  }).join('');
+  return '<div class="lab-strip"><div class="lab-strip-label">Clinical Data</div><div class="lab-row">' + items + '</div></div>';
+}
+
+function escapeStemHTML(s) {
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOption = null;
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+  document.getElementById('progress').style.width = `${(currentQ / questions.length) * 100}%`;
+  const __labs = q.labs || extractLabs(q.stem);
+  const __labStrip = renderLabStrip(__labs);
+  document.getElementById('q-stem').innerHTML = '<div>' + escapeStemHTML(q.stem) + '</div>' + __labStrip;
+  const optsHtml = q.options.map((opt, i) => `
+    <div class="option" data-idx="${i}" onclick="selectOption(${i})">
+      <span class="option-letter">${String.fromCharCode(65+i)}.</span>
+      <span>${opt}</span>
+    </div>
+  `).join('');
+  document.getElementById('q-options').innerHTML = optsHtml;
+  document.getElementById('rationale-area').classList.add('hidden');
+  document.getElementById('rationale-area').innerHTML = '';
+  document.getElementById('submit-btn').classList.remove('hidden');
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('next-btn').classList.add('hidden');
+}
+
+function selectOption(idx) {
+  selectedOption = idx;
+  document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.option[data-idx="${idx}"]`).classList.add('selected');
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+  const q = questions[currentQ];
+  const correct = q.answer;
+  const isCorrect = selectedOption === correct;
+  const pts = isCorrect ? 1 : 0;
+  totalPts += pts;
+  answers.push({ q, selected: selectedOption, correct, pts });
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    el.onclick = null;
+    if (i === correct) el.classList.add('correct');
+    else if (i === selectedOption) el.classList.add('wrong');
+  });
+
+  let othersHtml = '';
+  if (q.others) {
+    othersHtml = '<div class="others-list">';
+    Object.keys(q.others).forEach(k => {
+      othersHtml += `<div><strong>${String.fromCharCode(65+parseInt(k))}.</strong> ${q.others[k]}</div>`;
+    });
+    othersHtml += '</div>';
+  }
+
+  const ratHtml = `
+    <div class="rationale">
+      <span class="concept-pill">${q.concept}</span>
+      <div><strong>${isCorrect ? 'Correct.' : 'Incorrect.'}</strong> ${q.rationale}</div>
+      ${q.deepExplanation ? `<div style="margin-top:8px; color: var(--ink-soft);">${q.deepExplanation}</div>` : ''}
+      ${othersHtml}
+    </div>
+  `;
+  const rArea = document.getElementById('rationale-area');
+  rArea.innerHTML = ratHtml;
+  rArea.classList.remove('hidden');
+  document.getElementById('submit-btn').classList.add('hidden');
+  document.getElementById('next-btn').classList.remove('hidden');
+  document.getElementById('q-points').textContent = `${totalPts.toFixed(1)} pts`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.remove('hidden');
+  const pct = (totalPts / questions.length) * 100;
+  const scoreEl = document.getElementById('r-score');
+  scoreEl.textContent = `${pct.toFixed(0)}%`;
+  if (pct >= 85) scoreEl.classList.add('pass');
+  else if (pct >= 70) scoreEl.classList.add('borderline');
+  else scoreEl.classList.add('fail');
+  document.getElementById('r-pts').textContent = `${totalPts.toFixed(1)} / ${questions.length} points`;
+
+  let msg = '';
+  if (pct >= 90) msg = 'Excellent — you handle priority decisions well.';
+  else if (pct >= 77) msg = 'Passing — review missed scenarios for the test.';
+  else if (pct >= 60) msg = 'Below passing — focus on priority and safety judgments.';
+  else msg = 'This chapter needs deeper review. Re-read scenarios and retake.';
+  document.getElementById('r-msg').textContent = msg;
+
+  const missed = answers.filter(a => a.pts < 1);
+  if (missed.length > 0) {
+    let html = '<h3>Missed Concepts</h3>';
+    missed.forEach(m => {
+      html += `<div class="missed-item">
+        <div class="stem">${m.q.stem}</div>
+        <div class="ans">Correct: ${String.fromCharCode(65+m.correct)}. ${m.q.options[m.correct]}</div>
+        <div class="rat">${m.q.rationale}</div>
+      </div>`;
+    });
+    document.getElementById('missed-section').innerHTML = html;
+  }
+
+  const result = {
+    pct: parseFloat(pct.toFixed(1)),
+    pts: parseFloat(totalPts.toFixed(1)),
+    total: questions.length,
+    date: new Date().toISOString().split('T')[0]
+  };
+  localStorage.setItem('score_oncology_deepdrill', JSON.stringify(result));
+}
+</script>
+</body>
+</html>
