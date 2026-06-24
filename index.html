@@ -177,7 +177,7 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
 }
 .modal-overlay.visible { opacity: 1; pointer-events: all; }
 .modal-box {
-  background: var(--card); border-radius: 14px; max-width: 580px; width: 100%;
+  background: var(--card); border-radius: 14px; max-width: 820px; width: 100%;
   overflow: hidden; transform: translateY(10px); transition: transform 0.2s;
   max-height: 90vh; overflow-y: auto;
 }
@@ -201,13 +201,15 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
 
 .modal-body { padding: 24px 32px; }
 
-.modal-rows { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.modal-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .modal-row {
   display: grid; grid-template-columns: 36px 1fr; gap: 14px;
   align-items: flex-start; padding: 14px 16px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft);
 }
 .modal-row:last-child { border-bottom: none; }
+.modal-row:nth-child(even) { border-right: none; }
+.modal-row:nth-last-child(-n+2) { border-bottom: none; }
 .modal-row-icon {
   width: 36px; height: 36px; border-radius: 7px; display: flex;
   align-items: center; justify-content: center; flex-shrink: 0;
