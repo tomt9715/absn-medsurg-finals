@@ -781,11 +781,11 @@ document.getElementById('reset-modal-overlay').addEventListener('click', functio
 function closeModal() {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.remove('visible');
-  localStorage.setItem('hub_welcomed', '1');
+  localStorage.setItem('hub_welcomed_v2', '1');
 }
 
 function initModal() {
-  if (!localStorage.getItem('hub_welcomed')) {
+  if (!localStorage.getItem('hub_welcomed_v2')) {
     setTimeout(() => {
       document.getElementById('modal-overlay').classList.add('visible');
     }, 300);
