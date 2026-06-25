@@ -218,6 +218,15 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
 .modal-row:last-child { border-bottom: none; }
 .modal-row:nth-child(even) { border-right: none; }
 .modal-row:nth-last-child(-n+2) { border-bottom: none; }
+@media (max-width: 600px) {
+  .modal-rows { grid-template-columns: 1fr; }
+  .modal-row { border-right: none; }
+  .modal-row:nth-last-child(-n+2) { border-bottom: 1px solid var(--line-soft); }
+  .modal-row:last-child { border-bottom: none; }
+  .modal-box { margin: 12px; }
+  .modal-header { padding: 20px; }
+  .modal-body { padding: 16px 20px; }
+}
 .modal-row-icon {
   width: 36px; height: 36px; border-radius: 7px; display: flex;
   align-items: center; justify-content: center; flex-shrink: 0;
@@ -467,13 +476,22 @@ h1 { font-family: 'DM Serif Display', serif; font-size: 42px; color: var(--navy)
   </div>
 </div>
 
+<!-- Terms link -->
+<div style="background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 24px; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+  <span style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.3px;">This site is a supplemental study tool. Use is subject to our terms.</span>
+  <a href="terms.html" style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); letter-spacing: 0.3px; text-decoration: underline; text-underline-offset: 2px; white-space: nowrap;">Terms of Use &amp; Disclaimer →</a>
+</div>
+
 <div class="footer-bottom">
   <div class="legend">
     <div class="legend-item"><span class="legend-swatch" style="background: var(--pass);"></span>>=85% Pass</div>
     <div class="legend-item"><span class="legend-swatch" style="background: var(--partial);"></span>70-84% Borderline</div>
     <div class="legend-item"><span class="legend-swatch" style="background: var(--fail);"></span>&lt;70% Fail</div>
   </div>
-  <button class="reset-btn" onclick="resetAllScores()">Reset all scores</button>
+  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+    <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.3px;">&copy; 2026 Tom Thomas</span>
+    <button class="reset-btn" onclick="resetAllScores()">Reset all scores</button>
+  </div>
 </div>
 
 </div>
